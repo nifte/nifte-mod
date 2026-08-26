@@ -2,8 +2,8 @@
 	"schemaVersion": 1,
 	"id": "nifte",
 	"version": "${version}",
-	"name": "Nifte",
-	"description": "A client-side quality-of-life mod with toggleable HUD, inventory, camera, and crafting features.",
+	"name": "Nifte Mod",
+	"description": "A client-side QOL mod with lots of toggleable features.",
 	"authors": [
 		"Nifte"
 	],

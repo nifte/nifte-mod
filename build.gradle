@@ -1,6 +1,7 @@
 plugins {
 	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 	id 'maven-publish'
+	id 'com.modrinth.minotaur' version "${minotaur_version}"
 }
 
 version = project.version
@@ -63,6 +64,9 @@ tasks.withType(JavaCompile).configureEach {
 
 java {
 	withSourcesJar()
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
 
 	sourceCompatibility = JavaVersion.VERSION_25
 	targetCompatibility = JavaVersion.VERSION_25
@@ -85,5 +89,23 @@ publishing {
 	}
 
 	repositories {
+	}
+}
+
+modrinth {
+	token = System.getenv("MODRINTH_TOKEN")
+	projectId = project.modrinth_id
+	versionNumber = project.version
+	versionName = "Nifte Mod ${project.version}"
+	versionType = "release"
+	uploadFile = jar
+	gameVersions = [project.minecraft_version]
+	loaders = ["fabric"]
+	changelog = "Initial release for Minecraft ${project.minecraft_version}."
+	syncBodyFrom = rootProject.file("README.md").getText("UTF-8")
+	dependencies {
+		required.project "fabric-api"
+		required.project "cloth-config"
+		optional.project "modmenu"
 	}
 }
