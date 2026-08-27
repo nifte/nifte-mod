@@ -21,6 +21,7 @@
 		"GameRendererMixin",
 		"GuiGraphicsExtractorMixin",
 		"HudMixin",
+		"ItemInHandRendererMixin",
 		"ItemStackMixin",
 		"KeyboardInputMixin",
 		"KeyBindsListKeyEntryMixin",
@@ -37,6 +38,7 @@
 		"RecipeBookComponentAccessor",
 		"RecipeBookComponentMixin",
 		"RecipeBookPageAccessor",
+		"ScreenEffectRendererMixin",
 		"ToastManagerMixin"
 	],
 	"injectors": {

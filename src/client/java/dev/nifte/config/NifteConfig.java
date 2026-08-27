@@ -15,6 +15,7 @@ import java.util.List;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 
 import dev.nifte.Nifte;
 
@@ -52,6 +53,12 @@ public final class NifteConfig {
 
 	public boolean fullbrightEnabled = false;
 	public boolean disableFog = false;
+
+	public boolean lowerFireOverlay = true;
+	public float fireOverlayOffset = 0.4F;
+	public boolean lowerShield = true;
+	public float shieldOffset = 0.5F;
+	public boolean hideHeldTotem = false;
 
 	public boolean guiMoveEnabled = false;
 
@@ -165,6 +172,9 @@ public final class NifteConfig {
 					loaded.blockRestockEnabled = enabled;
 					loaded.bucketRestockEnabled = enabled;
 				}
+
+				loaded.fireOverlayOffset = Mth.clamp(loaded.fireOverlayOffset, 0.0F, 0.6F);
+				loaded.shieldOffset = Mth.clamp(loaded.shieldOffset, 0.0F, 0.8F);
 
 				instance = loaded;
 			}

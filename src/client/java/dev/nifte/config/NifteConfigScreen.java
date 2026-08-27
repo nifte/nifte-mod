@@ -26,6 +26,8 @@ import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
+import dev.nifte.feature.overlay.FireOverlayFeature;
+import dev.nifte.feature.overlay.ShieldOverlayFeature;
 import dev.nifte.feature.particles.ParticleGroups;
 import dev.nifte.input.NifteKeybinds;
 
@@ -151,6 +153,41 @@ public final class NifteConfigScreen {
 			.setDefaultValue(false)
 			.setTooltip(tooltip("nifte.config.disable_fog"))
 			.setSaveConsumer(value -> config.disableFog = value)
+			.build());
+		BooleanListEntry lowerFire = booleanToggle(entries, "nifte.config.lower_fire", config.lowerFireOverlay)
+			.setDefaultValue(true)
+			.setTooltip(tooltip("nifte.config.lower_fire"))
+			.setSaveConsumer(value -> config.lowerFireOverlay = value)
+			.build();
+		addEntry(category, lowerFire);
+		addEntry(category, overlayOffset(
+			entries,
+			"nifte.config.lower_fire.offset",
+			config.fireOverlayOffset,
+			FireOverlayFeature.DEFAULT_OFFSET,
+			FireOverlayFeature.MAX_OFFSET,
+			Requirement.isTrue(lowerFire),
+			value -> config.fireOverlayOffset = value
+		));
+		BooleanListEntry lowerShield = booleanToggle(entries, "nifte.config.lower_shield", config.lowerShield)
+			.setDefaultValue(true)
+			.setTooltip(tooltip("nifte.config.lower_shield"))
+			.setSaveConsumer(value -> config.lowerShield = value)
+			.build();
+		addEntry(category, lowerShield);
+		addEntry(category, overlayOffset(
+			entries,
+			"nifte.config.lower_shield.offset",
+			config.shieldOffset,
+			ShieldOverlayFeature.DEFAULT_OFFSET,
+			ShieldOverlayFeature.MAX_OFFSET,
+			Requirement.isTrue(lowerShield),
+			value -> config.shieldOffset = value
+		));
+		addEntry(category, booleanToggle(entries, "nifte.config.hide_held_totem", config.hideHeldTotem)
+			.setDefaultValue(false)
+			.setTooltip(tooltip("nifte.config.hide_held_totem"))
+			.setSaveConsumer(value -> config.hideHeldTotem = value)
 			.build());
 	}
 
@@ -425,6 +462,32 @@ public final class NifteConfigScreen {
 			.setTextGetter(NifteConfigScreen::offsetLabel)
 			.setSaveConsumer(saver)
 			.build();
+	}
+
+	private static AbstractConfigListEntry<?> overlayOffset(
+		ConfigEntryBuilder entries,
+		String key,
+		float current,
+		float defaultValue,
+		float max,
+		Requirement requirement,
+		Consumer<Float> saver
+	) {
+		int maxSlider = Math.round(max * 100.0F);
+		int slider = Mth.clamp(Math.round(current * 100.0F), 0, maxSlider);
+		return entries.startIntSlider(Component.translatable(key), slider, 0, maxSlider)
+			.setDefaultValue(Math.round(defaultValue * 100.0F))
+			.setTextGetter(NifteConfigScreen::overlayOffsetLabel)
+			.setSaveConsumer(value -> saver.accept(value / 100.0F))
+			.setDisplayRequirement(requirement)
+			.build();
+	}
+
+	private static Component overlayOffsetLabel(int hundredths) {
+		return Component.translatable(
+			"nifte.config.overlay.offset.value",
+			String.format(Locale.ROOT, "%.2f", hundredths / 100.0F)
+		);
 	}
 
 	private static Component tooltip(String key) {

@@ -28,6 +28,9 @@ This mod is **client-only**. It does not need to be installed on servers.
 - Zoom (hold; scroll to adjust FOV)
 - Fullbright
 - Disable terrain, water, lava, and status-effect fog
+- Lower first-person fire overlay
+- Lower first-person shields
+- Hide first-person held totems
 
 ### Inventory
 
