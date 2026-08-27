@@ -17,32 +17,43 @@ This mod is **client-only**. It does not need to be installed on servers.
 ### HUD
 
 - FPS counter with position, scale, and color
-- Armor durability display
+- Armor durability display, including held items
 - Potion effect timers on status icons
 
 ### Camera
 
 - Skip front-facing third person
 - Auto third person while flying or riding
-- Zoom (hold)
+- Dynamic third person: the mouse looks around, and WASD aims relative to the camera
+- Zoom (hold; scroll to adjust FOV)
 - Fullbright
-- Disable fog
+- Disable terrain, water, lava, and status-effect fog
 
 ### Inventory
 
 - Scroll items between slots with the mouse wheel
 - Sort containers with the pick-block button
 - Improved item dragging
-- Drop confirmation
+- Drop confirmation for tools and weapons, enchanted items, or everything
 - Move around while containers are open
+- Quick eat: hold a key to swap to food, eat, and swap back
+- Quick use: bind keys to use hotbar slots 1–9
 
 ### Equipment
 
 - Auto totem refill
-- Auto elytra swap
-- Auto tool swap
-- Auto weapon swap
+- Auto elytra swap (elytra in the air, chestplate on landing)
+- Auto tool swap, optionally from the full inventory
+- Auto weapon swap, optionally from the full inventory
 - Stop tools from breaking
+
+### Combat
+
+- Remove mob death animations
+- Highlight hostile mobs
+- Highlight other players
+- Projectile trajectory preview
+- Attack through tall grass without breaking it
 
 ### Building
 
@@ -61,6 +72,7 @@ This mod is **client-only**. It does not need to be installed on servers.
 
 ### UI
 
+- Player avatars in chat
 - Numerical ping in the player list
 - Hunger restored shown on food names and tooltips
 - Shulker box contents in tooltips
