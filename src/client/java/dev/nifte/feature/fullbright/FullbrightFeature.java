@@ -1,9 +1,7 @@
 package dev.nifte.feature.fullbright;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
-
 import dev.nifte.config.NifteConfig;
+import dev.nifte.hud.ToggleOverlay;
 
 public final class FullbrightFeature {
 	private FullbrightFeature() {
@@ -18,9 +16,6 @@ public final class FullbrightFeature {
 		config.fullbrightEnabled = !config.fullbrightEnabled;
 		NifteConfig.save();
 
-		Component message = Component.translatable(
-			config.fullbrightEnabled ? "nifte.fullbright.enabled" : "nifte.fullbright.disabled"
-		);
-		Minecraft.getInstance().gui.hud.setOverlayMessage(message, false);
+		ToggleOverlay.show("nifte.fullbright.toggle", config.fullbrightEnabled);
 	}
 }

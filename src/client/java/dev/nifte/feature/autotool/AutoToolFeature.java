@@ -5,7 +5,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -23,6 +22,7 @@ import org.jspecify.annotations.Nullable;
 
 import dev.nifte.config.NifteConfig;
 import dev.nifte.feature.toolprotect.ToolProtectFeature;
+import dev.nifte.hud.ToggleOverlay;
 import dev.nifte.inventory.InventoryClicks;
 
 public final class AutoToolFeature {
@@ -34,10 +34,7 @@ public final class AutoToolFeature {
 		config.autoToolEnabled = !config.autoToolEnabled;
 		NifteConfig.save();
 
-		Component message = Component.translatable(
-			config.autoToolEnabled ? "nifte.auto_tool.enabled" : "nifte.auto_tool.disabled"
-		);
-		Minecraft.getInstance().gui.hud.setOverlayMessage(message, false);
+		ToggleOverlay.show("nifte.auto_tool.toggle", config.autoToolEnabled);
 	}
 
 	public static void selectFor(Minecraft minecraft, BlockPos pos) {

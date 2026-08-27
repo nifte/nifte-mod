@@ -478,6 +478,9 @@ public final class NifteConfigScreen {
 			lines.add(Component.translatable("nifte.config.keybind.quick_use.unbound"));
 		} else {
 			lines.add(bound);
+			if (boundCount < NifteKeybinds.quickUseSlots.length) {
+				lines.add(Component.translatable("nifte.config.keybind.quick_use.more"));
+			}
 		}
 
 		return Optional.of(lines.toArray(Component[]::new));

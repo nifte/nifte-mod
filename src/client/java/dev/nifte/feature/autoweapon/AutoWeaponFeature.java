@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.EntityTypeTags;
@@ -26,6 +25,7 @@ import org.jspecify.annotations.Nullable;
 
 import dev.nifte.config.NifteConfig;
 import dev.nifte.feature.toolprotect.ToolProtectFeature;
+import dev.nifte.hud.ToggleOverlay;
 import dev.nifte.inventory.InventoryClicks;
 
 public final class AutoWeaponFeature {
@@ -37,10 +37,7 @@ public final class AutoWeaponFeature {
 		config.autoWeaponEnabled = !config.autoWeaponEnabled;
 		NifteConfig.save();
 
-		Component message = Component.translatable(
-			config.autoWeaponEnabled ? "nifte.auto_weapon.enabled" : "nifte.auto_weapon.disabled"
-		);
-		Minecraft.getInstance().gui.hud.setOverlayMessage(message, false);
+		ToggleOverlay.show("nifte.auto_weapon.toggle", config.autoWeaponEnabled);
 	}
 
 	public static void selectFor(Minecraft minecraft, Entity target) {
