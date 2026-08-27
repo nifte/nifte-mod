@@ -8,8 +8,11 @@ import net.minecraft.client.player.LocalPlayer;
 import dev.nifte.config.NifteConfig;
 
 public final class AutoThirdPerson {
+	private static final int SETTLE_TICKS = 8;
+
 	private static boolean held;
 	private static boolean wasEligible;
+	private static int eligibleTicks;
 
 	private AutoThirdPerson() {
 	}
@@ -22,11 +25,21 @@ public final class AutoThirdPerson {
 		LocalPlayer player = minecraft.player;
 		if (!NifteConfig.get().autoThirdPerson || player == null) {
 			restoreIfHeld(minecraft);
-			wasEligible = false;
+			resetEligibility();
 			return;
 		}
 
-		boolean eligible = shouldUseThirdPerson(player);
+		if (!shouldUseThirdPerson(player)) {
+			restoreIfHeld(minecraft);
+			resetEligibility();
+			return;
+		}
+
+		if (eligibleTicks < SETTLE_TICKS) {
+			eligibleTicks++;
+		}
+
+		boolean eligible = eligibleTicks >= SETTLE_TICKS;
 		CameraType current = minecraft.options.getCameraType();
 		if (eligible) {
 			if (!wasEligible && current.isFirstPerson()) {
@@ -35,11 +48,14 @@ public final class AutoThirdPerson {
 			} else if (held && current.isFirstPerson()) {
 				held = false;
 			}
-		} else {
-			restoreIfHeld(minecraft);
 		}
 
 		wasEligible = eligible;
+	}
+
+	private static void resetEligibility() {
+		wasEligible = false;
+		eligibleTicks = 0;
 	}
 
 	private static boolean shouldUseThirdPerson(LocalPlayer player) {
