@@ -15,6 +15,7 @@ import dev.nifte.feature.autotool.AutoToolFeature;
 import dev.nifte.feature.autoweapon.AutoWeaponFeature;
 import dev.nifte.feature.food.QuickEatFeature;
 import dev.nifte.feature.fullbright.FullbrightFeature;
+import dev.nifte.feature.glow.EntityGlowFeature;
 import dev.nifte.feature.zoom.ZoomFeature;
 
 public final class NifteKeybinds {
@@ -24,6 +25,8 @@ public final class NifteKeybinds {
 	public static KeyMapping fullbright;
 	public static KeyMapping autoTool;
 	public static KeyMapping autoWeapon;
+	public static KeyMapping highlightHostileMobs;
+	public static KeyMapping highlightOtherPlayers;
 	public static KeyMapping zoom;
 	public static KeyMapping quickEat;
 	public static final KeyMapping[] quickUseSlots = new KeyMapping[9];
@@ -56,6 +59,18 @@ public final class NifteKeybinds {
 		));
 		autoWeapon = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.auto_weapon",
+			InputConstants.Type.KEYSYM,
+			GLFW.GLFW_KEY_UNKNOWN,
+			CATEGORY
+		));
+		highlightHostileMobs = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+			"key.nifte.highlight_hostile_mobs",
+			InputConstants.Type.KEYSYM,
+			GLFW.GLFW_KEY_UNKNOWN,
+			CATEGORY
+		));
+		highlightOtherPlayers = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+			"key.nifte.highlight_other_players",
 			InputConstants.Type.KEYSYM,
 			GLFW.GLFW_KEY_UNKNOWN,
 			CATEGORY
@@ -99,6 +114,14 @@ public final class NifteKeybinds {
 
 		while (autoWeapon.consumeClick()) {
 			AutoWeaponFeature.toggle();
+		}
+
+		while (highlightHostileMobs.consumeClick()) {
+			EntityGlowFeature.toggleHostileMobs();
+		}
+
+		while (highlightOtherPlayers.consumeClick()) {
+			EntityGlowFeature.toggleOtherPlayers();
 		}
 
 		ZoomFeature.tick();

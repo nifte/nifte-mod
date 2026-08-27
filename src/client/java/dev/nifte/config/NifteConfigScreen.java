@@ -283,10 +283,12 @@ public final class NifteConfigScreen {
 			.build());
 		addEntry(category, booleanToggle(entries, "nifte.config.highlight_hostile_mobs", config.highlightHostileMobs)
 			.setDefaultValue(false)
+			.setTooltipSupplier(keybindTooltip("nifte.config.highlight_hostile_mobs", NifteKeybinds.highlightHostileMobs, false))
 			.setSaveConsumer(value -> config.highlightHostileMobs = value)
 			.build());
 		addEntry(category, booleanToggle(entries, "nifte.config.highlight_other_players", config.highlightOtherPlayers)
 			.setDefaultValue(false)
+			.setTooltipSupplier(keybindTooltip("nifte.config.highlight_other_players", NifteKeybinds.highlightOtherPlayers, false))
 			.setSaveConsumer(value -> config.highlightOtherPlayers = value)
 			.build());
 		addEntry(category, booleanToggle(entries, "nifte.config.trajectory", config.projectileTrajectoryEnabled)
