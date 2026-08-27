@@ -509,7 +509,7 @@ public final class NifteConfigScreen {
 
 	private static Component keybindHint(KeyMapping mapping, boolean hold) {
 		if (!NifteKeybinds.isBound(mapping)) {
-			return Component.translatable("nifte.config.keybind.unbound");
+			return Component.translatable("nifte.config.keybind.unbound").withStyle(ChatFormatting.YELLOW);
 		}
 
 		Component key = mapping.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.YELLOW);
@@ -540,7 +540,7 @@ public final class NifteConfigScreen {
 		}
 
 		if (boundCount == 0) {
-			lines.add(Component.translatable("nifte.config.keybind.quick_use.unbound"));
+			lines.add(Component.translatable("nifte.config.keybind.quick_use.unbound").withStyle(ChatFormatting.YELLOW));
 		} else {
 			lines.add(bound);
 			if (boundCount < NifteKeybinds.quickUseSlots.length) {
