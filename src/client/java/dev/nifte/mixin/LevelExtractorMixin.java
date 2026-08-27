@@ -1,6 +1,7 @@
 package dev.nifte.mixin;
 
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.extract.LevelExtractor;
@@ -17,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import dev.nifte.feature.bridge.BedrockBridging;
+import dev.nifte.hud.ProjectileTrajectory;
 
 @Mixin(LevelExtractor.class)
 public abstract class LevelExtractorMixin {
@@ -26,6 +28,14 @@ public abstract class LevelExtractorMixin {
 
 	@Shadow
 	private ClientLevel level;
+
+	@Inject(
+		method = "extract",
+		at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/extract/LevelExtractor;extractGizmos()V")
+	)
+	private void nifte$projectileTrajectory(DeltaTracker deltaTracker, Camera camera, float deltaPartialTick, CallbackInfo ci) {
+		ProjectileTrajectory.emit(this.minecraft, camera, deltaPartialTick);
+	}
 
 	@Inject(method = "extractBlockOutline", at = @At("RETURN"))
 	private void nifte$bridgePreview(Camera camera, LevelRenderState levelRenderState, CallbackInfo ci) {

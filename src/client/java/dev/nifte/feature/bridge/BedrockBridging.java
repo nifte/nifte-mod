@@ -101,12 +101,16 @@ public final class BedrockBridging {
 			return false;
 		}
 
-		return vanillaTarget.equals(alongRay.target()) || !new AABB(vanillaTarget).clip(from, to).isEmpty();
+		return vanillaTarget.equals(alongRay.target()) || alongLookRay(vanillaTarget, from, to);
 	}
 
 	private static BlockPos vanillaPlacementTarget(Level level, BlockHitResult hit) {
 		BlockPos clicked = hit.getBlockPos();
 		return level.getBlockState(clicked).canBeReplaced() ? clicked : clicked.relative(hit.getDirection());
+	}
+
+	private static boolean alongLookRay(BlockPos pos, Vec3 from, Vec3 to) {
+		return !new AABB(pos).clip(from, to).isEmpty();
 	}
 
 	private static @Nullable BridgePlacement scan(LocalPlayer player, InteractionHand hand, Vec3 from, Vec3 to, Vec3 look) {
@@ -180,7 +184,7 @@ public final class BedrockBridging {
 		BridgePlacement best = null;
 		for (Direction face : Direction.values()) {
 			BridgePlacement candidate = placement(player, hand, support, face, from);
-			if (candidate == null || new AABB(candidate.target()).clip(from, to).isEmpty()) {
+			if (candidate == null || !alongLookRay(candidate.target(), from, to)) {
 				continue;
 			}
 
@@ -203,17 +207,63 @@ public final class BedrockBridging {
 			|| !level.getWorldBorder().isWithinBounds(target)
 			|| !player.isWithinBlockInteractionRange(support, 1.0)
 			|| !player.isWithinBlockInteractionRange(target, 0.0)
-			|| !level.getBlockState(target).canBeReplaced()
-			|| hasVisibleVanillaSupport(player, target)) {
+			|| !level.getBlockState(target).canBeReplaced()) {
 			return null;
 		}
 
-		BlockHitResult hit = new BlockHitResult(faceHit(support, face), face, support, false);
-		if (!canPredictPlace(player, hand, hit)) {
+		BlockHitResult hit = hitForTarget(player, hand, target, support, face);
+		if (hit == null) {
 			return null;
 		}
 
 		return new BridgePlacement(hit, target, from.distanceToSqr(Vec3.atCenterOf(target)));
+	}
+
+	private static @Nullable BlockHitResult hitForTarget(
+		LocalPlayer player,
+		InteractionHand hand,
+		BlockPos target,
+		BlockPos wrapSupport,
+		Direction wrapFace
+	) {
+		BlockHitResult visible = closestVisibleSupportHit(player, target);
+		if (visible != null && canPredictPlace(player, hand, visible)) {
+			return visible;
+		}
+
+		BlockHitResult replaceAir = new BlockHitResult(Vec3.atCenterOf(target), wrapFace.getOpposite(), target, true);
+		if (canPredictPlace(player, hand, replaceAir)) {
+			return replaceAir;
+		}
+
+		BlockHitResult wrap = new BlockHitResult(faceHit(wrapSupport, wrapFace), wrapFace, wrapSupport, false);
+		return canPredictPlace(player, hand, wrap) ? wrap : null;
+	}
+
+	private static @Nullable BlockHitResult closestVisibleSupportHit(LocalPlayer player, BlockPos target) {
+		Level level = player.level();
+		Vec3 eye = player.getEyePosition();
+		BlockHitResult best = null;
+		double bestDist = Double.POSITIVE_INFINITY;
+		for (Direction towardNeighbor : Direction.values()) {
+			BlockPos neighbor = target.relative(towardNeighbor);
+			if (level.getBlockState(neighbor).canBeReplaced() || !player.isWithinBlockInteractionRange(neighbor, 1.0)) {
+				continue;
+			}
+
+			Direction face = towardNeighbor.getOpposite();
+			if (!isFaceVisible(face, eye, neighbor)) {
+				continue;
+			}
+
+			double dist = eye.distanceToSqr(faceCenter(neighbor, face));
+			if (dist < bestDist) {
+				bestDist = dist;
+				best = new BlockHitResult(faceHit(neighbor, face), face, neighbor, false);
+			}
+		}
+
+		return best;
 	}
 
 	private static boolean canPredictPlace(LocalPlayer player, InteractionHand hand, BlockHitResult hit) {
@@ -232,23 +282,6 @@ public final class BedrockBridging {
 		return state != null
 			&& state.canSurvive(player.level(), pos)
 			&& player.level().isUnobstructed(state, pos, CollisionContext.placementContext(player));
-	}
-
-	private static boolean hasVisibleVanillaSupport(LocalPlayer player, BlockPos target) {
-		Level level = player.level();
-		Vec3 eye = player.getEyePosition();
-		for (Direction towardNeighbor : Direction.values()) {
-			BlockPos neighbor = target.relative(towardNeighbor);
-			if (level.getBlockState(neighbor).canBeReplaced() || !player.isWithinBlockInteractionRange(neighbor, 1.0)) {
-				continue;
-			}
-
-			if (isFaceVisible(towardNeighbor.getOpposite(), eye, neighbor)) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	private static boolean isFaceVisible(Direction face, Vec3 eye, BlockPos block) {

@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
 import dev.nifte.config.NifteConfig;
+import dev.nifte.config.ToolProtectMode;
 
 public final class ToolProtectFeature {
 	private static final long NOTIFY_INTERVAL_MS = 1500L;
@@ -27,12 +28,20 @@ public final class ToolProtectFeature {
 	}
 
 	public static boolean shouldBlock(ItemStack stack) {
-		if (!NifteConfig.get().toolProtectEnabled || !isAboutToBreak(stack)) {
+		if (!matches(stack, NifteConfig.get().toolProtectMode) || !isAboutToBreak(stack)) {
 			return false;
 		}
 
 		LocalPlayer player = Minecraft.getInstance().player;
 		return player != null && !player.getAbilities().instabuild && !player.isSpectator();
+	}
+
+	private static boolean matches(ItemStack stack, ToolProtectMode mode) {
+		return switch (mode) {
+			case DISABLED -> false;
+			case ALL_TOOLS -> true;
+			case ENCHANTED_ONLY -> stack.isEnchanted();
+		};
 	}
 
 	public static boolean blockMainHand(Minecraft minecraft) {

@@ -23,8 +23,10 @@ This mod is **client-only**. It does not need to be installed on servers.
 ### Camera
 
 - Skip front-facing third person
-- Zoom (hold or toggle)
+- Auto third person while flying or riding
+- Zoom (hold)
 - Fullbright
+- Disable fog
 
 ### Inventory
 
@@ -45,8 +47,9 @@ This mod is **client-only**. It does not need to be installed on servers.
 ### Building
 
 - Bedrock-style bridging
-- Fast block placement
-- Hand restocking for blocks and liquid buckets
+- Fast block placement, locked to the first clicked face
+- Block restocking
+- Bucket restocking
 - No block-breaking delay
 
 ### Crafting

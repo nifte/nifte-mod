@@ -1,12 +1,14 @@
 package dev.nifte.hud;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
 
 import dev.nifte.config.ArmorHudAnchor;
 import dev.nifte.config.NifteConfig;
@@ -46,30 +48,17 @@ public final class ArmorHud {
 	}
 
 	private static void extractCorner(GuiGraphicsExtractor graphics, NifteConfig config, Minecraft minecraft) {
-		int line = 0;
-		int maxWidth = 0;
-		String[] lines = new String[SLOTS.length];
-		ItemStack[] stacks = new ItemStack[SLOTS.length];
-		int[] colors = new int[SLOTS.length];
-
-		for (int i = 0; i < SLOTS.length; i++) {
-			ArmorHudPiece piece = ArmorHudLayout.piece(minecraft.player, minecraft.font, SLOTS[i]);
-			if (piece == null) {
-				continue;
-			}
-
-			lines[line] = piece.text();
-			stacks[line] = piece.stack();
-			colors[line] = piece.color();
-			maxWidth = Math.max(maxWidth, ArmorHudLayout.ICON_SIZE + ArmorHudLayout.ICON_TEXT_GAP + piece.textWidth());
-			line++;
-		}
-
-		if (line == 0) {
+		List<ArmorHudPiece> pieces = cornerPieces(minecraft.player, minecraft.font, config);
+		if (pieces.isEmpty()) {
 			return;
 		}
 
-		int contentHeight = line * ArmorHudLayout.ROW_HEIGHT;
+		int maxWidth = 0;
+		for (ArmorHudPiece piece : pieces) {
+			maxWidth = Math.max(maxWidth, ArmorHudLayout.ICON_SIZE + ArmorHudLayout.ICON_TEXT_GAP + piece.textWidth());
+		}
+
+		int contentHeight = pieces.size() * ArmorHudLayout.ROW_HEIGHT;
 		int x = HudLayout.x(config.armorAnchor, graphics.guiWidth(), config.armorOffsetX, (int) (maxWidth * config.armorScale));
 		int y = HudLayout.y(config.armorAnchor, graphics.guiHeight(), config.armorOffsetY, (int) (contentHeight * config.armorScale));
 
@@ -77,25 +66,63 @@ public final class ArmorHud {
 		graphics.pose().translate(x, y);
 		graphics.pose().scale(config.armorScale, config.armorScale);
 
-		for (int i = 0; i < line; i++) {
+		for (int i = 0; i < pieces.size(); i++) {
+			ArmorHudPiece piece = pieces.get(i);
 			int rowY = i * ArmorHudLayout.ROW_HEIGHT;
-			graphics.item(stacks[i], 0, rowY);
-			graphics.text(minecraft.font, lines[i], ArmorHudLayout.ICON_SIZE + ArmorHudLayout.ICON_TEXT_GAP, rowY + ArmorHudLayout.TEXT_Y_OFFSET, 0xFF000000 | colors[i], true);
+			graphics.item(piece.stack(), 0, rowY);
+			graphics.text(minecraft.font, piece.text(), ArmorHudLayout.ICON_SIZE + ArmorHudLayout.ICON_TEXT_GAP, rowY + ArmorHudLayout.TEXT_Y_OFFSET, 0xFF000000 | piece.color(), true);
 		}
 
 		graphics.pose().popMatrix();
 	}
 
+	private static List<ArmorHudPiece> cornerPieces(LocalPlayer player, Font font, NifteConfig config) {
+		List<ArmorHudPiece> pieces = new ArrayList<>(6);
+		for (EquipmentSlot slot : SLOTS) {
+			ArmorHudPiece piece = ArmorHudLayout.piece(player, font, slot);
+			if (piece != null) {
+				pieces.add(piece);
+			}
+		}
+
+		if (config.armorShowHeldItems) {
+			ArmorHudPiece mainHand = ArmorHudLayout.piece(font, player.getMainHandItem());
+			if (mainHand != null) {
+				pieces.add(mainHand);
+			}
+
+			ArmorHudPiece offHand = ArmorHudLayout.piece(font, player.getOffhandItem());
+			if (offHand != null) {
+				pieces.add(offHand);
+			}
+		}
+
+		return pieces;
+	}
+
 	private static void extractHotbar(GuiGraphicsExtractor graphics, NifteConfig config, Minecraft minecraft) {
 		LocalPlayer player = minecraft.player;
-		ArmorHudPiece[] left = pieces(player, minecraft.font, LEFT_SLOTS);
-		ArmorHudPiece[] right = pieces(player, minecraft.font, RIGHT_SLOTS);
-		if (!ArmorHudLayout.hasPiece(left) && !ArmorHudLayout.hasPiece(right)) {
+		Font font = minecraft.font;
+		ArmorHudPiece[] left = pieces(player, font, LEFT_SLOTS);
+		ArmorHudPiece[] right = pieces(player, font, RIGHT_SLOTS);
+		ArmorHudPiece leftHeld = config.armorShowHeldItems ? ArmorHudLayout.heldOnSide(player, font, true) : null;
+		ArmorHudPiece rightHeld = config.armorShowHeldItems ? ArmorHudLayout.heldOnSide(player, font, false) : null;
+		boolean anyArmor = ArmorHudLayout.hasPiece(left) || ArmorHudLayout.hasPiece(right);
+		boolean anyHeld = leftHeld != null || rightHeld != null;
+		if (!anyArmor && !anyHeld) {
 			return;
 		}
 
-		int topY = ArmorHudLayout.hotbarItemY(graphics.guiHeight()) - Math.round(ArmorHudLayout.ROW_HEIGHT * config.armorScale);
-		drawHotbarColumn(graphics, minecraft.font, left, true, ArmorHudLayout.leftColumnX(
+		if (anyHeld && anyArmor) {
+			left = ArmorHudLayout.withHeldRow(leftHeld, left);
+			right = ArmorHudLayout.withHeldRow(rightHeld, right);
+		} else if (anyHeld) {
+			left = new ArmorHudPiece[] { leftHeld };
+			right = new ArmorHudPiece[] { rightHeld };
+		}
+
+		int topY = ArmorHudLayout.hotbarTopY(graphics.guiHeight(), Math.max(left.length, right.length), config.armorScale);
+		drawHotbarColumn(graphics, font, left, true, ArmorHudLayout.leftColumnX(
 			player,
 			graphics.guiWidth(),
 			Math.round(ArmorHudLayout.columnWidth(left) * config.armorScale),
@@ -103,7 +130,7 @@ public final class ArmorHud {
 		), topY, config.armorScale);
 		drawHotbarColumn(
 			graphics,
-			minecraft.font,
+			font,
 			right,
 			false,
 			ArmorHudLayout.rightColumnX(player, graphics.guiWidth(), config.armorOffsetX),

@@ -6,7 +6,9 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 
 import dev.nifte.config.NifteConfig;
 import dev.nifte.feature.autototem.AutoTotemFeature;
+import dev.nifte.feature.camera.AutoThirdPerson;
 import dev.nifte.feature.elytra.AutoElytraFeature;
+import dev.nifte.feature.quickuse.QuickUseFeature;
 import dev.nifte.feature.recipes.RecipeFeatures;
 import dev.nifte.hud.ArmorHud;
 import dev.nifte.hud.FpsHud;
@@ -18,6 +20,8 @@ public final class NifteClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		NifteConfig.load();
 		NifteKeybinds.register();
+		AutoThirdPerson.register();
+		QuickUseFeature.register();
 		AutoTotemFeature.register();
 		AutoElytraFeature.register();
 		RecipeFeatures.register();

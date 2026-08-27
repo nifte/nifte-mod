@@ -25,6 +25,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import dev.nifte.feature.autotool.AutoToolFeature;
 import dev.nifte.feature.breakdelay.NoBreakDelay;
 import dev.nifte.feature.bridge.BedrockBridging;
+import dev.nifte.feature.fastplace.FastBlockPlacement;
+import dev.nifte.feature.food.QuickEatFeature;
 import dev.nifte.feature.restock.HandRestockFeature;
 import dev.nifte.feature.toolprotect.ToolProtectFeature;
 
@@ -51,6 +53,14 @@ public abstract class MultiPlayerGameModeMixin {
 	@Inject(method = "useItemOn", at = @At("HEAD"))
 	private void nifte$handRestockCaptureUseOn(LocalPlayer player, InteractionHand hand, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
 		HandRestockFeature.capture(player, hand);
+	}
+
+	@Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
+	private void nifte$fastBlockPlacement(LocalPlayer player, InteractionHand hand, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
+		FastBlockPlacement.onUseOn(player, hand, hit);
+		if (FastBlockPlacement.shouldBlockPlacement(player, hand, hit)) {
+			cir.setReturnValue(InteractionResult.FAIL);
+		}
 	}
 
 	@Inject(method = "useItemOn", at = @At("RETURN"))
@@ -132,6 +142,13 @@ public abstract class MultiPlayerGameModeMixin {
 	private void nifte$protectUseItem(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
 		if (player instanceof LocalPlayer localPlayer && ToolProtectFeature.blockHand(localPlayer, hand)) {
 			cir.setReturnValue(InteractionResult.PASS);
+		}
+	}
+
+	@Inject(method = "releaseUsingItem", at = @At("HEAD"), cancellable = true)
+	private void nifte$quickEatKeepUsing(Player player, CallbackInfo ci) {
+		if (QuickEatFeature.shouldKeepUsing()) {
+			ci.cancel();
 		}
 	}
 

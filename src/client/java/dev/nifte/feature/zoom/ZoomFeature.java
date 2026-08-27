@@ -6,24 +6,18 @@ import dev.nifte.config.NifteConfig;
 import dev.nifte.input.NifteKeybinds;
 
 public final class ZoomFeature {
-	private static boolean toggledOn;
 	private static boolean wasZooming;
 	private static float sessionFov = 30.0F;
 
 	private ZoomFeature() {
 	}
 
-	public static void tick(boolean togglePressed) {
+	public static void tick() {
 		NifteConfig config = NifteConfig.get();
-		if (!config.zoomEnabled) {
-			toggledOn = false;
+		if (!config.zoomEnabled || !NifteKeybinds.isBound(NifteKeybinds.zoom)) {
 			wasZooming = false;
 			sessionFov = config.zoomFov;
 			return;
-		}
-
-		if (config.zoomToggleMode && togglePressed) {
-			toggledOn = !toggledOn;
 		}
 
 		boolean zooming = isZooming();
@@ -37,16 +31,9 @@ public final class ZoomFeature {
 	}
 
 	public static boolean isZooming() {
-		NifteConfig config = NifteConfig.get();
-		if (!config.zoomEnabled || NifteKeybinds.zoom == null) {
-			return false;
-		}
-
-		if (config.zoomToggleMode) {
-			return toggledOn;
-		}
-
-		return NifteKeybinds.zoom.isDown();
+		return NifteConfig.get().zoomEnabled
+			&& NifteKeybinds.isBound(NifteKeybinds.zoom)
+			&& NifteKeybinds.zoom.isDown();
 	}
 
 	public static float modifyFov(float fov) {

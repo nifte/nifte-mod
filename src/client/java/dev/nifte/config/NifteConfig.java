@@ -36,18 +36,22 @@ public final class NifteConfig {
 	public int armorOffsetX = 2;
 	public int armorOffsetY = 2;
 	public float armorScale = 1.0F;
+	public boolean armorShowHeldItems = true;
 
 	public boolean potionHudEnabled = true;
 
 	public boolean numericalPing = true;
+	public boolean chatAvatarsEnabled = true;
 
 	public boolean disableFrontThirdPerson = true;
+	public boolean autoThirdPerson = false;
+	public boolean dynamicThirdPerson = false;
 
 	public boolean zoomEnabled = true;
-	public boolean zoomToggleMode = false;
 	public float zoomFov = 30.0F;
 
 	public boolean fullbrightEnabled = false;
+	public boolean disableFog = false;
 
 	public boolean guiMoveEnabled = false;
 
@@ -64,10 +68,11 @@ public final class NifteConfig {
 	public boolean autoToolFromInventory = false;
 	public boolean autoWeaponEnabled = false;
 	public boolean autoWeaponFromInventory = false;
-	public boolean toolProtectEnabled = true;
+	public ToolProtectMode toolProtectMode = ToolProtectMode.ALL_TOOLS;
 	public boolean bedrockBridgingEnabled = false;
 	public boolean fastBlockPlacementEnabled = false;
-	public boolean handRestockEnabled = false;
+	public boolean blockRestockEnabled = false;
+	public boolean bucketRestockEnabled = false;
 	public boolean noBreakDelayEnabled = false;
 
 	public boolean unlockAllRecipes = true;
@@ -79,6 +84,14 @@ public final class NifteConfig {
 	public boolean disableRecipeToasts = false;
 	public boolean foodHungerNameEnabled = true;
 	public boolean shulkerBoxTooltipEnabled = true;
+
+	public boolean hideDeadMobs = false;
+	public boolean highlightHostileMobs = false;
+	public boolean highlightOtherPlayers = false;
+	public boolean ignoreGrassInCombat = false;
+	public boolean quickEatEnabled = true;
+	public boolean quickUseEnabled = true;
+	public boolean projectileTrajectoryEnabled = true;
 
 	public List<String> disabledParticles = new ArrayList<>();
 
@@ -115,6 +128,16 @@ public final class NifteConfig {
 					loaded.dropConfirmMode = DropConfirmMode.DISABLED;
 				}
 
+				if (loaded.toolProtectMode == null) {
+					loaded.toolProtectMode = ToolProtectMode.ALL_TOOLS;
+				}
+
+				if (json.has("toolProtectEnabled") && !json.has("toolProtectMode")) {
+					loaded.toolProtectMode = json.get("toolProtectEnabled").getAsBoolean()
+						? ToolProtectMode.ALL_TOOLS
+						: ToolProtectMode.DISABLED;
+				}
+
 				if (!json.has("dropConfirmSeconds") && json.has("dropConfirmTicks")) {
 					loaded.dropConfirmSeconds = Math.max(1, Math.round(json.get("dropConfirmTicks").getAsInt() / 20.0F));
 				}
@@ -123,6 +146,24 @@ public final class NifteConfig {
 					loaded.dropConfirmSeconds = 3;
 				} else if (loaded.dropConfirmSeconds > 10) {
 					loaded.dropConfirmSeconds = 10;
+				}
+
+				if (!json.has("quickEatEnabled") && json.has("fastEatingEnabled")) {
+					loaded.quickEatEnabled = json.get("fastEatingEnabled").getAsBoolean();
+				}
+
+				if (!json.has("highlightHostileMobs") && json.has("glowHostileMobs")) {
+					loaded.highlightHostileMobs = json.get("glowHostileMobs").getAsBoolean();
+				}
+
+				if (!json.has("highlightOtherPlayers") && json.has("glowOtherPlayers")) {
+					loaded.highlightOtherPlayers = json.get("glowOtherPlayers").getAsBoolean();
+				}
+
+				if (json.has("handRestockEnabled") && !json.has("blockRestockEnabled") && !json.has("bucketRestockEnabled")) {
+					boolean enabled = json.get("handRestockEnabled").getAsBoolean();
+					loaded.blockRestockEnabled = enabled;
+					loaded.bucketRestockEnabled = enabled;
 				}
 
 				instance = loaded;

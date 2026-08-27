@@ -23,7 +23,10 @@ public final class ArmorHudLayout {
 	}
 
 	static @Nullable ArmorHudPiece piece(LocalPlayer player, Font font, EquipmentSlot slot) {
-		ItemStack stack = player.getItemBySlot(slot);
+		return piece(font, player.getItemBySlot(slot));
+	}
+
+	static @Nullable ArmorHudPiece piece(Font font, ItemStack stack) {
 		if (stack.isEmpty() || !stack.isDamageableItem()) {
 			return null;
 		}
@@ -32,6 +35,23 @@ public final class ArmorHudLayout {
 		int percent = Mth.clamp(Math.round(remaining * 100.0F / stack.getMaxDamage()), 0, 100);
 		String text = percent + "%";
 		return new ArmorHudPiece(stack, text, durabilityColor(percent), font.width(text));
+	}
+
+	static @Nullable ArmorHudPiece heldOnSide(LocalPlayer player, Font font, boolean leftSide) {
+		boolean mainOnLeft = player.getMainArm() == HumanoidArm.LEFT;
+		ItemStack stack = leftSide == mainOnLeft ? player.getMainHandItem() : player.getOffhandItem();
+		return piece(font, stack);
+	}
+
+	static ArmorHudPiece[] withHeldRow(@Nullable ArmorHudPiece held, ArmorHudPiece[] armor) {
+		ArmorHudPiece[] column = new ArmorHudPiece[armor.length + 1];
+		column[0] = held;
+		System.arraycopy(armor, 0, column, 1, armor.length);
+		return column;
+	}
+
+	static int hotbarTopY(int guiHeight, int rows, float scale) {
+		return hotbarItemY(guiHeight) - Math.round(Math.max(rows - 1, 0) * ROW_HEIGHT * scale);
 	}
 
 	static int columnWidth(ArmorHudPiece[] pieces) {

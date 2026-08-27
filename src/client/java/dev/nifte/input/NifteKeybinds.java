@@ -10,10 +10,10 @@ import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
 
 import dev.nifte.Nifte;
-import dev.nifte.config.NifteConfig;
 import dev.nifte.config.NifteConfigScreen;
 import dev.nifte.feature.autotool.AutoToolFeature;
 import dev.nifte.feature.autoweapon.AutoWeaponFeature;
+import dev.nifte.feature.food.QuickEatFeature;
 import dev.nifte.feature.fullbright.FullbrightFeature;
 import dev.nifte.feature.zoom.ZoomFeature;
 
@@ -25,8 +25,14 @@ public final class NifteKeybinds {
 	public static KeyMapping autoTool;
 	public static KeyMapping autoWeapon;
 	public static KeyMapping zoom;
+	public static KeyMapping quickEat;
+	public static final KeyMapping[] quickUseSlots = new KeyMapping[9];
 
 	private NifteKeybinds() {
+	}
+
+	public static boolean isBound(KeyMapping mapping) {
+		return mapping != null && !mapping.isUnbound();
 	}
 
 	public static void register() {
@@ -60,6 +66,20 @@ public final class NifteKeybinds {
 			GLFW.GLFW_KEY_Z,
 			CATEGORY
 		));
+		quickEat = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+			"key.nifte.quick_eat",
+			InputConstants.Type.KEYSYM,
+			GLFW.GLFW_KEY_UNKNOWN,
+			CATEGORY
+		));
+		for (int slot = 0; slot < quickUseSlots.length; slot++) {
+			quickUseSlots[slot] = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+				"key.nifte.quick_use." + (slot + 1),
+				InputConstants.Type.KEYSYM,
+				GLFW.GLFW_KEY_UNKNOWN,
+				CATEGORY
+			));
+		}
 
 		ClientTickEvents.END_CLIENT_TICK.register(NifteKeybinds::tick);
 	}
@@ -81,6 +101,7 @@ public final class NifteKeybinds {
 			AutoWeaponFeature.toggle();
 		}
 
-		ZoomFeature.tick(NifteConfig.get().zoomToggleMode && zoom.consumeClick());
+		ZoomFeature.tick();
+		QuickEatFeature.tick(minecraft);
 	}
 }

@@ -1,32 +1,38 @@
 package dev.nifte.config;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import me.shedaniel.clothconfig2.api.Requirement;
+import me.shedaniel.clothconfig2.gui.entries.BooleanListEntry;
 import me.shedaniel.clothconfig2.impl.builders.BooleanToggleBuilder;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 import dev.nifte.feature.particles.ParticleGroups;
+import dev.nifte.input.NifteKeybinds;
 
 public final class NifteConfigScreen {
 	private static final Function<Boolean, Component> ENABLED_DISABLED = value -> Component.translatable(
 		value ? "nifte.config.enabled" : "nifte.config.disabled"
 	).withStyle(value ? ChatFormatting.GREEN : ChatFormatting.RED);
-	private static final Function<Boolean, Component> ZOOM_HOLD_TOGGLE = value -> Component.translatable(
-		value ? "nifte.config.zoom.mode.toggle" : "nifte.config.zoom.mode.hold"
-	).withStyle(ChatFormatting.WHITE);
 	private static final int HUD_SCALE_MIN = 5;
 	private static final int HUD_SCALE_MAX = 30;
 	private static final int HUD_SCALE_DEFAULT = 10;
@@ -46,6 +52,7 @@ public final class NifteConfigScreen {
 		addCameraCategory(builder, entries, config);
 		addInventoryCategory(builder, entries, config);
 		addEquipmentCategory(builder, entries, config);
+		addCombatCategory(builder, entries, config);
 		addBuildingCategory(builder, entries, config);
 		addCraftingCategory(builder, entries, config);
 		addUiCategory(builder, entries, config);
@@ -55,36 +62,52 @@ public final class NifteConfigScreen {
 
 	private static void addHudCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
 		ConfigCategory category = builder.getOrCreateCategory(Component.translatable("nifte.config.hud"));
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.fps"), config.fpsEnabled)
+		BooleanListEntry fpsEnabled = booleanToggle(entries, "nifte.config.fps", config.fpsEnabled)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.fpsEnabled = value)
-			.build());
-		addAnchor(entries, category, "nifte.config.fps.anchor", config.fpsAnchor, HudAnchor.TOP_LEFT, value -> config.fpsAnchor = value);
-		addOffset(entries, category, "nifte.config.fps.x", config.fpsOffsetX, 2, value -> config.fpsOffsetX = value);
-		addOffset(entries, category, "nifte.config.fps.y", config.fpsOffsetY, 2, value -> config.fpsOffsetY = value);
-		addScale(entries, category, "nifte.config.fps.scale", config.fpsScale, value -> config.fpsScale = value);
-		addEntry(category, entries.startColorField(Component.translatable("nifte.config.fps.color"), config.fpsColor)
+			.build();
+		addEntry(category, fpsEnabled);
+
+		SubCategoryBuilder fps = entries.startSubCategory(Component.translatable("nifte.config.fps.settings"))
+			.setExpanded(false)
+			.setDisplayRequirement(Requirement.isTrue(fpsEnabled));
+		fps.add(anchor(entries, "nifte.config.fps.anchor", config.fpsAnchor, HudAnchor.TOP_LEFT, value -> config.fpsAnchor = value));
+		fps.add(offset(entries, "nifte.config.fps.x", config.fpsOffsetX, 2, value -> config.fpsOffsetX = value));
+		fps.add(offset(entries, "nifte.config.fps.y", config.fpsOffsetY, 2, value -> config.fpsOffsetY = value));
+		fps.add(scale(entries, "nifte.config.fps.scale", config.fpsScale, value -> config.fpsScale = value));
+		fps.add(entries.startColorField(Component.translatable("nifte.config.fps.color"), config.fpsColor)
 			.setDefaultValue(0xFFFFFF)
 			.setSaveConsumer(value -> config.fpsColor = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.fps.hide_debug"), config.fpsHideWithDebug)
+		fps.add(booleanToggle(entries, "nifte.config.fps.hide_debug", config.fpsHideWithDebug)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.fpsHideWithDebug = value)
 			.build());
+		addEntry(category, fps.build());
 
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.armor"), config.armorHudEnabled)
+		BooleanListEntry armorEnabled = booleanToggle(entries, "nifte.config.armor", config.armorHudEnabled)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.armorHudEnabled = value)
-			.build());
-		addEntry(category, entries.startEnumSelector(Component.translatable("nifte.config.armor.anchor"), ArmorHudAnchor.class, config.armorAnchor)
+			.build();
+		addEntry(category, armorEnabled);
+
+		SubCategoryBuilder armor = entries.startSubCategory(Component.translatable("nifte.config.armor.settings"))
+			.setExpanded(false)
+			.setDisplayRequirement(Requirement.isTrue(armorEnabled));
+		armor.add(entries.startEnumSelector(Component.translatable("nifte.config.armor.anchor"), ArmorHudAnchor.class, config.armorAnchor)
 			.setDefaultValue(ArmorHudAnchor.BOTTOM_LEFT)
 			.setSaveConsumer(value -> config.armorAnchor = value)
 			.build());
-		addOffset(entries, category, "nifte.config.armor.x", config.armorOffsetX, 2, value -> config.armorOffsetX = value);
-		addOffset(entries, category, "nifte.config.armor.y", config.armorOffsetY, 2, value -> config.armorOffsetY = value);
-		addScale(entries, category, "nifte.config.armor.scale", config.armorScale, value -> config.armorScale = value);
+		armor.add(offset(entries, "nifte.config.armor.x", config.armorOffsetX, 2, value -> config.armorOffsetX = value));
+		armor.add(offset(entries, "nifte.config.armor.y", config.armorOffsetY, 2, value -> config.armorOffsetY = value));
+		armor.add(scale(entries, "nifte.config.armor.scale", config.armorScale, value -> config.armorScale = value));
+		armor.add(booleanToggle(entries, "nifte.config.armor.held", config.armorShowHeldItems)
+			.setDefaultValue(true)
+			.setSaveConsumer(value -> config.armorShowHeldItems = value)
+			.build());
+		addEntry(category, armor.build());
 
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.potion"), config.potionHudEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.potion", config.potionHudEnabled)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.potionHudEnabled = value)
 			.build());
@@ -92,106 +115,177 @@ public final class NifteConfigScreen {
 
 	private static void addCameraCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
 		ConfigCategory category = builder.getOrCreateCategory(Component.translatable("nifte.config.camera"));
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.front_third_person"), config.disableFrontThirdPerson)
+		addEntry(category, booleanToggle(entries, "nifte.config.front_third_person", config.disableFrontThirdPerson)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.disableFrontThirdPerson = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.zoom"), config.zoomEnabled)
-			.setDefaultValue(true)
-			.setSaveConsumer(value -> config.zoomEnabled = value)
-			.build());
-		addEntry(category, booleanToggle(entries, Component.translatable("nifte.config.zoom.mode"), config.zoomToggleMode, ZOOM_HOLD_TOGGLE)
+		addEntry(category, booleanToggle(entries, "nifte.config.auto_third_person", config.autoThirdPerson)
 			.setDefaultValue(false)
-			.setSaveConsumer(value -> config.zoomToggleMode = value)
+			.setTooltip(tooltip("nifte.config.auto_third_person"))
+			.setSaveConsumer(value -> config.autoThirdPerson = value)
 			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.dynamic_third_person", config.dynamicThirdPerson)
+			.setDefaultValue(false)
+			.setTooltip(tooltip("nifte.config.dynamic_third_person"))
+			.setSaveConsumer(value -> config.dynamicThirdPerson = value)
+			.build());
+		BooleanListEntry zoomEnabled = booleanToggle(entries, "nifte.config.zoom", config.zoomEnabled)
+			.setDefaultValue(true)
+			.setTooltipSupplier(keybindTooltip("key.nifte.zoom", NifteKeybinds.zoom, true))
+			.setSaveConsumer(value -> config.zoomEnabled = value)
+			.build();
+		addEntry(category, zoomEnabled);
 		int zoomFov = Mth.clamp(Math.round(config.zoomFov), 10, 70);
 		addEntry(category, entries.startIntSlider(Component.translatable("nifte.config.zoom.fov"), zoomFov, 10, 70)
 			.setDefaultValue(30)
+			.setTooltip(tooltip("nifte.config.zoom.fov"))
 			.setSaveConsumer(value -> config.zoomFov = value)
+			.setDisplayRequirement(Requirement.isTrue(zoomEnabled))
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.fullbright"), config.fullbrightEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.fullbright", config.fullbrightEnabled)
 			.setDefaultValue(false)
+			.setTooltipSupplier(keybindTooltip(NifteKeybinds.fullbright, false))
 			.setSaveConsumer(value -> config.fullbrightEnabled = value)
+			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.disable_fog", config.disableFog)
+			.setDefaultValue(false)
+			.setTooltip(tooltip("nifte.config.disable_fog"))
+			.setSaveConsumer(value -> config.disableFog = value)
 			.build());
 	}
 
 	private static void addInventoryCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
 		ConfigCategory category = builder.getOrCreateCategory(Component.translatable("nifte.config.inventory"));
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.item_scroll"), config.itemScrollEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.item_scroll", config.itemScrollEnabled)
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.itemScrollEnabled = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.sort"), config.containerSortEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.sort", config.containerSortEnabled)
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.containerSortEnabled = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.container_drag"), config.containerDragEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.container_drag", config.containerDragEnabled)
 			.setDefaultValue(false)
+			.setTooltip(tooltip("nifte.config.container_drag"))
 			.setSaveConsumer(value -> config.containerDragEnabled = value)
 			.build());
-		addEntry(category, entries.startEnumSelector(Component.translatable("nifte.config.drop_confirm"), DropConfirmMode.class, config.dropConfirmMode)
+		var dropConfirmMode = entries.startEnumSelector(Component.translatable("nifte.config.drop_confirm"), DropConfirmMode.class, config.dropConfirmMode)
 			.setDefaultValue(DropConfirmMode.DISABLED)
 			.setEnumNameProvider(mode -> ((DropConfirmMode) mode).optionLabel())
+			.setTooltip(tooltip("nifte.config.drop_confirm"))
 			.setSaveConsumer(value -> config.dropConfirmMode = value)
-			.build());
+			.build();
+		addEntry(category, dropConfirmMode);
 		addEntry(category, entries.startIntSlider(Component.translatable("nifte.config.drop_confirm.seconds"), config.dropConfirmSeconds, 1, 10)
 			.setDefaultValue(3)
 			.setTextGetter(value -> Component.translatable("nifte.config.drop_confirm.seconds.value", value))
 			.setSaveConsumer(value -> config.dropConfirmSeconds = value)
+			.setDisplayRequirement(Requirement.not(Requirement.isValue(dropConfirmMode, DropConfirmMode.DISABLED)))
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.gui_move"), config.guiMoveEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.gui_move", config.guiMoveEnabled)
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.guiMoveEnabled = value)
+			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.quick_eat", config.quickEatEnabled)
+			.setDefaultValue(true)
+			.setTooltipSupplier(keybindTooltip("key.nifte.quick_eat", NifteKeybinds.quickEat, true))
+			.setSaveConsumer(value -> config.quickEatEnabled = value)
+			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.quick_use", config.quickUseEnabled)
+			.setDefaultValue(true)
+			.setTooltipSupplier(NifteConfigScreen::quickUseTooltip)
+			.setSaveConsumer(value -> config.quickUseEnabled = value)
 			.build());
 	}
 
 	private static void addEquipmentCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
 		ConfigCategory category = builder.getOrCreateCategory(Component.translatable("nifte.config.equipment"));
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.auto_totem"), config.autoTotemEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.auto_totem", config.autoTotemEnabled)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.autoTotemEnabled = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.auto_elytra"), config.autoElytraEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.auto_elytra", config.autoElytraEnabled)
 			.setDefaultValue(false)
+			.setTooltip(tooltip("nifte.config.auto_elytra"))
 			.setSaveConsumer(value -> config.autoElytraEnabled = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.auto_tool"), config.autoToolEnabled)
+		BooleanListEntry autoToolEnabled = booleanToggle(entries, "nifte.config.auto_tool", config.autoToolEnabled)
 			.setDefaultValue(false)
+			.setTooltipSupplier(keybindTooltip(NifteKeybinds.autoTool, false))
 			.setSaveConsumer(value -> config.autoToolEnabled = value)
-			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.auto_tool.inventory"), config.autoToolFromInventory)
+			.build();
+		addEntry(category, autoToolEnabled);
+		addEntry(category, booleanToggle(entries, "nifte.config.auto_tool.inventory", config.autoToolFromInventory)
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.autoToolFromInventory = value)
+			.setDisplayRequirement(Requirement.isTrue(autoToolEnabled))
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.auto_weapon"), config.autoWeaponEnabled)
+		BooleanListEntry autoWeaponEnabled = booleanToggle(entries, "nifte.config.auto_weapon", config.autoWeaponEnabled)
 			.setDefaultValue(false)
+			.setTooltipSupplier(keybindTooltip(NifteKeybinds.autoWeapon, false))
 			.setSaveConsumer(value -> config.autoWeaponEnabled = value)
-			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.auto_weapon.inventory"), config.autoWeaponFromInventory)
+			.build();
+		addEntry(category, autoWeaponEnabled);
+		addEntry(category, booleanToggle(entries, "nifte.config.auto_weapon.inventory", config.autoWeaponFromInventory)
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.autoWeaponFromInventory = value)
+			.setDisplayRequirement(Requirement.isTrue(autoWeaponEnabled))
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.tool_protect"), config.toolProtectEnabled)
+		addEntry(category, entries.startEnumSelector(Component.translatable("nifte.config.tool_protect"), ToolProtectMode.class, config.toolProtectMode)
+			.setDefaultValue(ToolProtectMode.ALL_TOOLS)
+			.setEnumNameProvider(mode -> ((ToolProtectMode) mode).optionLabel())
+			.setSaveConsumer(value -> config.toolProtectMode = value)
+			.build());
+	}
+
+	private static void addCombatCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
+		ConfigCategory category = builder.getOrCreateCategory(Component.translatable("nifte.config.combat"));
+		addEntry(category, booleanToggle(entries, "nifte.config.hide_dead_mobs", config.hideDeadMobs)
+			.setDefaultValue(false)
+			.setSaveConsumer(value -> config.hideDeadMobs = value)
+			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.highlight_hostile_mobs", config.highlightHostileMobs)
+			.setDefaultValue(false)
+			.setSaveConsumer(value -> config.highlightHostileMobs = value)
+			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.highlight_other_players", config.highlightOtherPlayers)
+			.setDefaultValue(false)
+			.setSaveConsumer(value -> config.highlightOtherPlayers = value)
+			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.trajectory", config.projectileTrajectoryEnabled)
 			.setDefaultValue(true)
-			.setSaveConsumer(value -> config.toolProtectEnabled = value)
+			.setSaveConsumer(value -> config.projectileTrajectoryEnabled = value)
+			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.ignore_grass", config.ignoreGrassInCombat)
+			.setDefaultValue(false)
+			.setTooltip(tooltip("nifte.config.ignore_grass"))
+			.setSaveConsumer(value -> config.ignoreGrassInCombat = value)
 			.build());
 	}
 
 	private static void addBuildingCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
 		ConfigCategory category = builder.getOrCreateCategory(Component.translatable("nifte.config.building"));
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.bedrock_bridging"), config.bedrockBridgingEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.bedrock_bridging", config.bedrockBridgingEnabled)
 			.setDefaultValue(false)
+			.setTooltip(tooltip("nifte.config.bedrock_bridging"))
 			.setSaveConsumer(value -> config.bedrockBridgingEnabled = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.fast_block_placement"), config.fastBlockPlacementEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.fast_block_placement", config.fastBlockPlacementEnabled)
 			.setDefaultValue(false)
+			.setTooltip(tooltip("nifte.config.fast_block_placement"))
 			.setSaveConsumer(value -> config.fastBlockPlacementEnabled = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.hand_restock"), config.handRestockEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.block_restock", config.blockRestockEnabled)
 			.setDefaultValue(false)
-			.setSaveConsumer(value -> config.handRestockEnabled = value)
+			.setTooltip(tooltip("nifte.config.block_restock"))
+			.setSaveConsumer(value -> config.blockRestockEnabled = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.no_break_delay"), config.noBreakDelayEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.bucket_restock", config.bucketRestockEnabled)
+			.setDefaultValue(false)
+			.setTooltip(tooltip("nifte.config.bucket_restock"))
+			.setSaveConsumer(value -> config.bucketRestockEnabled = value)
+			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.no_break_delay", config.noBreakDelayEnabled)
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.noBreakDelayEnabled = value)
 			.build());
@@ -199,19 +293,19 @@ public final class NifteConfigScreen {
 
 	private static void addCraftingCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
 		ConfigCategory category = builder.getOrCreateCategory(Component.translatable("nifte.config.crafting"));
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.unlock_recipes"), config.unlockAllRecipes)
+		addEntry(category, booleanToggle(entries, "nifte.config.unlock_recipes", config.unlockAllRecipes)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.unlockAllRecipes = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.recipe_scroll"), config.recipeBookScrollEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.recipe_scroll", config.recipeBookScrollEnabled)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.recipeBookScrollEnabled = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.recipe_centered"), config.keepCraftingCentered)
+		addEntry(category, booleanToggle(entries, "nifte.config.recipe_centered", config.keepCraftingCentered)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.keepCraftingCentered = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.instant_craft"), config.instantCraftEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.instant_craft", config.instantCraftEnabled)
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.instantCraftEnabled = value)
 			.build());
@@ -219,23 +313,27 @@ public final class NifteConfigScreen {
 
 	private static void addUiCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
 		ConfigCategory category = builder.getOrCreateCategory(Component.translatable("nifte.config.ui"));
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.ping"), config.numericalPing)
+		addEntry(category, booleanToggle(entries, "nifte.config.chat_avatars", config.chatAvatarsEnabled)
+			.setDefaultValue(true)
+			.setSaveConsumer(value -> config.chatAvatarsEnabled = value)
+			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.ping", config.numericalPing)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.numericalPing = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.food_hunger"), config.foodHungerNameEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.food_hunger", config.foodHungerNameEnabled)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.foodHungerNameEnabled = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.shulker_tooltip"), config.shulkerBoxTooltipEnabled)
+		addEntry(category, booleanToggle(entries, "nifte.config.shulker_tooltip", config.shulkerBoxTooltipEnabled)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.shulkerBoxTooltipEnabled = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.toasts.advancement"), config.disableAdvancementToasts)
+		addEntry(category, booleanToggle(entries, "nifte.config.toasts.advancement", config.disableAdvancementToasts)
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.disableAdvancementToasts = value)
 			.build());
-		addEntry(category, booleanToggle(entries,Component.translatable("nifte.config.toasts.recipe"), config.disableRecipeToasts)
+		addEntry(category, booleanToggle(entries, "nifte.config.toasts.recipe", config.disableRecipeToasts)
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.disableRecipeToasts = value)
 			.build());
@@ -263,6 +361,10 @@ public final class NifteConfigScreen {
 		});
 	}
 
+	private static BooleanToggleBuilder booleanToggle(ConfigEntryBuilder entries, String key, boolean value) {
+		return booleanToggle(entries, Component.translatable(key), value, ENABLED_DISABLED);
+	}
+
 	private static BooleanToggleBuilder booleanToggle(ConfigEntryBuilder entries, Component name, boolean value) {
 		return booleanToggle(entries, name, value, ENABLED_DISABLED);
 	}
@@ -276,51 +378,109 @@ public final class NifteConfigScreen {
 		return entries.startBooleanToggle(name, value).setYesNoTextSupplier(yesNoText);
 	}
 
-	private static void addAnchor(
+	private static AbstractConfigListEntry<?> anchor(
 		ConfigEntryBuilder entries,
-		ConfigCategory category,
 		String key,
 		HudAnchor current,
 		HudAnchor defaultValue,
 		Consumer<HudAnchor> saver
 	) {
-		addEntry(category, entries.startEnumSelector(Component.translatable(key), HudAnchor.class, current)
+		return entries.startEnumSelector(Component.translatable(key), HudAnchor.class, current)
 			.setDefaultValue(defaultValue)
 			.setSaveConsumer(saver)
-			.build());
+			.build();
 	}
 
-	private static void addScale(
+	private static AbstractConfigListEntry<?> scale(
 		ConfigEntryBuilder entries,
-		ConfigCategory category,
 		String key,
 		float current,
 		Consumer<Float> saver
 	) {
 		int slider = Mth.clamp(Math.round(current * 10.0F), HUD_SCALE_MIN, HUD_SCALE_MAX);
-		addEntry(category, entries.startIntSlider(Component.translatable(key), slider, HUD_SCALE_MIN, HUD_SCALE_MAX)
+		return entries.startIntSlider(Component.translatable(key), slider, HUD_SCALE_MIN, HUD_SCALE_MAX)
 			.setDefaultValue(HUD_SCALE_DEFAULT)
 			.setTextGetter(NifteConfigScreen::scaleLabel)
 			.setSaveConsumer(value -> saver.accept(value / 10.0F))
-			.build());
+			.build();
 	}
 
 	private static Component scaleLabel(int tenths) {
 		return Component.translatable("nifte.config.hud.scale.value", String.format(Locale.ROOT, "%.1f", tenths / 10.0F));
 	}
 
-	private static void addOffset(
+	private static Component offsetLabel(int pixels) {
+		return Component.translatable("nifte.config.hud.offset.value", pixels);
+	}
+
+	private static AbstractConfigListEntry<?> offset(
 		ConfigEntryBuilder entries,
-		ConfigCategory category,
 		String key,
 		int current,
 		int defaultValue,
 		Consumer<Integer> saver
 	) {
-		addEntry(category, entries.startIntSlider(Component.translatable(key), current, 0, 400)
+		return entries.startIntSlider(Component.translatable(key), current, 0, 400)
 			.setDefaultValue(defaultValue)
+			.setTextGetter(NifteConfigScreen::offsetLabel)
 			.setSaveConsumer(saver)
-			.build());
+			.build();
+	}
+
+	private static Component tooltip(String key) {
+		return Component.translatable(key + ".tooltip");
+	}
+
+	private static Supplier<Optional<Component[]>> keybindTooltip(KeyMapping mapping, boolean hold) {
+		return () -> Optional.of(new Component[] { keybindHint(mapping, hold) });
+	}
+
+	private static Supplier<Optional<Component[]>> keybindTooltip(String descriptionKey, KeyMapping mapping, boolean hold) {
+		return () -> Optional.of(new Component[] {
+			Component.translatable(descriptionKey + ".tooltip"),
+			keybindHint(mapping, hold)
+		});
+	}
+
+	private static Component keybindHint(KeyMapping mapping, boolean hold) {
+		if (!NifteKeybinds.isBound(mapping)) {
+			return Component.translatable("nifte.config.keybind.unbound");
+		}
+
+		Component key = mapping.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.YELLOW);
+		return Component.translatable(hold ? "nifte.config.keybind.hold" : "nifte.config.keybind.toggle", key);
+	}
+
+	private static Optional<Component[]> quickUseTooltip() {
+		List<Component> lines = new ArrayList<>();
+		lines.add(Component.translatable("nifte.config.quick_use.settings.tooltip"));
+		MutableComponent bound = Component.empty();
+		int boundCount = 0;
+		for (int slot = 0; slot < NifteKeybinds.quickUseSlots.length; slot++) {
+			KeyMapping mapping = NifteKeybinds.quickUseSlots[slot];
+			if (!NifteKeybinds.isBound(mapping)) {
+				continue;
+			}
+
+			if (boundCount > 0) {
+				bound.append(Component.literal(", "));
+			}
+
+			bound.append(Component.translatable(
+				"nifte.config.keybind.quick_use.slot",
+				mapping.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.YELLOW),
+				slot + 1
+			));
+			boundCount++;
+		}
+
+		if (boundCount == 0) {
+			lines.add(Component.translatable("nifte.config.keybind.quick_use.unbound"));
+		} else {
+			lines.add(bound);
+		}
+
+		return Optional.of(lines.toArray(Component[]::new));
 	}
 
 	private static void addEntry(ConfigCategory category, AbstractConfigListEntry<?> entry) {

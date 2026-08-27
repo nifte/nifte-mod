@@ -12,7 +12,6 @@ import net.minecraft.world.item.ItemStack;
 
 import org.jspecify.annotations.Nullable;
 
-import dev.nifte.config.NifteConfig;
 import dev.nifte.inventory.InventoryClicks;
 
 public final class HandRestockFeature {
@@ -62,7 +61,7 @@ public final class HandRestockFeature {
 	}
 
 	private static boolean canRestock(Minecraft minecraft, LocalPlayer player) {
-		if (!NifteConfig.get().handRestockEnabled || minecraft.gameMode == null) {
+		if (minecraft.gameMode == null) {
 			return false;
 		}
 
