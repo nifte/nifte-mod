@@ -55,9 +55,9 @@ public final class NifteConfig {
 	public boolean disableFog = false;
 
 	public boolean lowerFireOverlay = true;
-	public float fireOverlayOffset = 0.4F;
+	public float fireOverlayOffset = 0.35F;
 	public boolean lowerShield = true;
-	public float shieldOffset = 0.5F;
+	public float shieldOffset = 0.3F;
 	public boolean hideHeldTotem = false;
 
 	public boolean guiMoveEnabled = false;

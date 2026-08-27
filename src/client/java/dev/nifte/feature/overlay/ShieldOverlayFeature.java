@@ -10,7 +10,7 @@ import dev.nifte.config.NifteConfig;
 public final class ShieldOverlayFeature {
 	public static final float MIN_OFFSET = 0.0F;
 	public static final float MAX_OFFSET = 0.8F;
-	public static final float DEFAULT_OFFSET = 0.5F;
+	public static final float DEFAULT_OFFSET = 0.3F;
 
 	private ShieldOverlayFeature() {
 	}
