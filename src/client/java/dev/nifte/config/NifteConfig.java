@@ -41,6 +41,17 @@ public final class NifteConfig {
 
 	public boolean potionHudEnabled = true;
 
+	public boolean mobHealthEnabled = true;
+	public HudAnchor mobHealthAnchor = HudAnchor.TOP_RIGHT;
+	public int mobHealthOffsetX = 2;
+	public int mobHealthOffsetY = 2;
+	public float mobHealthScale = 1.0F;
+	public int mobHealthFadeSeconds = 3;
+	public int mobHealthReach = 5;
+
+	public boolean compassHudEnabled = true;
+	public float compassScale = 1.0F;
+
 	public boolean numericalPing = true;
 	public boolean chatAvatarsEnabled = true;
 
@@ -61,6 +72,7 @@ public final class NifteConfig {
 	public boolean hideHeldTotem = false;
 
 	public boolean guiMoveEnabled = false;
+	public boolean keepSprintOnWallEnabled = false;
 
 	public DropConfirmMode dropConfirmMode = DropConfirmMode.DISABLED;
 	public int dropConfirmSeconds = 3;
@@ -126,6 +138,18 @@ public final class NifteConfig {
 				if (loaded.armorAnchor == null) {
 					loaded.armorAnchor = ArmorHudAnchor.BOTTOM_LEFT;
 				}
+
+				if (loaded.mobHealthAnchor == null) {
+					loaded.mobHealthAnchor = HudAnchor.TOP_RIGHT;
+				}
+
+				if (loaded.mobHealthFadeSeconds < 0) {
+					loaded.mobHealthFadeSeconds = 3;
+				} else if (loaded.mobHealthFadeSeconds > 10) {
+					loaded.mobHealthFadeSeconds = 10;
+				}
+
+				loaded.mobHealthReach = Mth.clamp(loaded.mobHealthReach, 1, 20);
 
 				if (loaded.dropConfirmMode == null) {
 					loaded.dropConfirmMode = DropConfirmMode.DISABLED;

@@ -47,6 +47,11 @@ public final class DynamicThirdPerson {
 		}
 
 		capture(player);
+		if (followLookWhileGliding(player)) {
+			syncCameraToPlayer(player);
+			return entity.getViewYRot(partialTicks);
+		}
+
 		return cameraYaw;
 	}
 
@@ -58,6 +63,11 @@ public final class DynamicThirdPerson {
 		}
 
 		capture(player);
+		if (followLookWhileGliding(player)) {
+			syncCameraToPlayer(player);
+			return entity.getViewXRot(partialTicks);
+		}
+
 		return cameraPitch;
 	}
 
@@ -67,7 +77,7 @@ public final class DynamicThirdPerson {
 		}
 
 		LocalPlayer player = Minecraft.getInstance().player;
-		if (player == null) {
+		if (player == null || followLookWhileGliding(player)) {
 			return false;
 		}
 
@@ -84,6 +94,11 @@ public final class DynamicThirdPerson {
 		}
 
 		capture(player);
+		if (followLookWhileGliding(player)) {
+			syncCameraToPlayer(player);
+			return null;
+		}
+
 		Vec2 move = player.input.getMoveVector();
 		if (move.lengthSquared() < 1.0E-6F) {
 			return null;
@@ -94,6 +109,15 @@ public final class DynamicThirdPerson {
 		player.setYHeadRot(targetYaw);
 		player.setXRot(cameraPitch);
 		return new Vec2(0.0F, move.length());
+	}
+
+	private static boolean followLookWhileGliding(LocalPlayer player) {
+		return player.isFallFlying() && player.input.getMoveVector().lengthSquared() < 1.0E-6F;
+	}
+
+	private static void syncCameraToPlayer(LocalPlayer player) {
+		cameraYaw = player.getYRot();
+		cameraPitch = player.getXRot();
 	}
 
 	private static void capture(LocalPlayer player) {

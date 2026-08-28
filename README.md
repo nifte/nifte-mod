@@ -19,6 +19,8 @@ This mod is **client-only**. It does not need to be installed on servers.
 - FPS counter with position, scale, and color
 - Armor durability display, including held items
 - Potion effect timers on status icons
+- Mob and player health overlay when looking at them, with a 3D preview
+- Scrolling compass at the top of the screen
 
 ### Camera
 
@@ -57,6 +59,7 @@ This mod is **client-only**. It does not need to be installed on servers.
 - Highlight other players
 - Projectile trajectory preview
 - Attack through tall grass without breaking it
+- Keep sprinting when you bump into a wall
 
 ### Building
 

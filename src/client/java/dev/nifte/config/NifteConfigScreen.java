@@ -107,6 +107,43 @@ public final class NifteConfigScreen {
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.potionHudEnabled = value)
 			.build());
+
+		addEntry(category, booleanToggle(entries, "nifte.config.mob_health", config.mobHealthEnabled)
+			.setDefaultValue(true)
+			.setSaveConsumer(value -> config.mobHealthEnabled = value)
+			.build());
+		addSettings(
+			category,
+			entries,
+			"nifte.config.mob_health",
+			anchor(entries, "nifte.config.mob_health.anchor", config.mobHealthAnchor, HudAnchor.TOP_RIGHT, value -> config.mobHealthAnchor = value),
+			offset(entries, "nifte.config.mob_health.x", config.mobHealthOffsetX, 2, value -> config.mobHealthOffsetX = value),
+			offset(entries, "nifte.config.mob_health.y", config.mobHealthOffsetY, 2, value -> config.mobHealthOffsetY = value),
+			scale(entries, "nifte.config.mob_health.scale", config.mobHealthScale, value -> config.mobHealthScale = value),
+			entries.startIntSlider(Component.translatable("nifte.config.mob_health.fade"), config.mobHealthFadeSeconds, 0, 10)
+				.setDefaultValue(3)
+				.setTextGetter(NifteConfigScreen::mobHealthFadeLabel)
+				.setTooltip(tooltip("nifte.config.mob_health.fade"))
+				.setSaveConsumer(value -> config.mobHealthFadeSeconds = value)
+				.build(),
+			entries.startIntSlider(Component.translatable("nifte.config.mob_health.reach"), config.mobHealthReach, 1, 20)
+				.setDefaultValue(5)
+				.setTextGetter(NifteConfigScreen::mobHealthReachLabel)
+				.setTooltip(tooltip("nifte.config.mob_health.reach"))
+				.setSaveConsumer(value -> config.mobHealthReach = value)
+				.build()
+		);
+
+		addEntry(category, booleanToggle(entries, "nifte.config.compass", config.compassHudEnabled)
+			.setDefaultValue(true)
+			.setSaveConsumer(value -> config.compassHudEnabled = value)
+			.build());
+		addSettings(
+			category,
+			entries,
+			"nifte.config.compass",
+			scale(entries, "nifte.config.compass.scale", config.compassScale, value -> config.compassScale = value)
+		);
 	}
 
 	private static void addCameraCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
@@ -351,6 +388,10 @@ public final class NifteConfigScreen {
 			.setTooltip(tooltip("nifte.config.ignore_grass"))
 			.setSaveConsumer(value -> config.ignoreGrassInCombat = value)
 			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.keep_sprint", config.keepSprintOnWallEnabled)
+			.setDefaultValue(false)
+			.setSaveConsumer(value -> config.keepSprintOnWallEnabled = value)
+			.build());
 	}
 
 	private static void addBuildingCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
@@ -534,6 +575,24 @@ public final class NifteConfigScreen {
 			? "nifte.config.drop_confirm.seconds.value.singular"
 			: "nifte.config.drop_confirm.seconds.value";
 		return Component.translatable(key, seconds);
+	}
+
+	private static Component mobHealthFadeLabel(int seconds) {
+		if (seconds == 0) {
+			return Component.translatable("nifte.config.mob_health.fade.value.instant");
+		}
+
+		String key = seconds == 1
+			? "nifte.config.mob_health.fade.value.singular"
+			: "nifte.config.mob_health.fade.value";
+		return Component.translatable(key, seconds);
+	}
+
+	private static Component mobHealthReachLabel(int blocks) {
+		String key = blocks == 1
+			? "nifte.config.mob_health.reach.value.singular"
+			: "nifte.config.mob_health.reach.value";
+		return Component.translatable(key, blocks);
 	}
 
 	private static Component overlayOffsetLabel(int hundredths) {

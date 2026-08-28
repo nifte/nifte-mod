@@ -6,6 +6,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec2;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -14,9 +15,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import dev.nifte.feature.camera.DynamicThirdPerson;
 import dev.nifte.feature.combat.IgnoreGrassFeature;
 import dev.nifte.feature.dropconfirm.DropConfirmFeature;
+import dev.nifte.feature.sprint.KeepSprintFeature;
 
 @Mixin(LocalPlayer.class)
 public abstract class LocalPlayerMixin {
+	@Invoker("isSprintingPossible")
+	abstract boolean nifte$isSprintingPossible(boolean allowedInShallowWater);
+
+	@Inject(method = "shouldStopRunSprinting", at = @At("HEAD"), cancellable = true)
+	private void nifte$keepSprintOnWall(CallbackInfoReturnable<Boolean> cir) {
+		if (!KeepSprintFeature.enabled()) {
+			return;
+		}
+
+		LocalPlayer player = (LocalPlayer) (Object) this;
+		cir.setReturnValue(!this.nifte$isSprintingPossible(player.getAbilities().flying) || !player.input.hasForwardImpulse());
+	}
+
 	@Inject(method = "drop(Z)Z", at = @At("HEAD"), cancellable = true)
 	private void nifte$dropConfirm(boolean dropAll, CallbackInfoReturnable<Boolean> cir) {
 		LocalPlayer player = (LocalPlayer) (Object) this;
