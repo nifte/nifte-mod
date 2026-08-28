@@ -2,6 +2,7 @@ package dev.nifte.mixin;
 
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractRecipeBookScreen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerInput;
@@ -43,6 +44,14 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 		}
 
 		if (ContainerDragFeature.handleClick(screen, event)) {
+			cir.setReturnValue(true);
+		}
+	}
+
+	@Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
+	private void nifte$keyPressed(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
+		AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) (Object) this;
+		if (ContainerSortFeature.handleKey(screen, event)) {
 			cir.setReturnValue(true);
 		}
 	}

@@ -29,6 +29,7 @@ public final class NifteKeybinds {
 	public static KeyMapping highlightOtherPlayers;
 	public static KeyMapping zoom;
 	public static KeyMapping quickEat;
+	public static KeyMapping sortContainer;
 	public static final KeyMapping[] quickUseSlots = new KeyMapping[9];
 
 	private NifteKeybinds() {
@@ -85,6 +86,12 @@ public final class NifteKeybinds {
 			"key.nifte.quick_eat",
 			InputConstants.Type.KEYSYM,
 			GLFW.GLFW_KEY_UNKNOWN,
+			CATEGORY
+		));
+		sortContainer = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+			"key.nifte.sort",
+			InputConstants.Type.MOUSE,
+			GLFW.GLFW_MOUSE_BUTTON_MIDDLE,
 			CATEGORY
 		));
 		for (int slot = 0; slot < quickUseSlots.length; slot++) {

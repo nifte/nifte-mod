@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -15,6 +17,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 import dev.nifte.config.NifteConfig;
+import dev.nifte.input.NifteKeybinds;
 import dev.nifte.inventory.InventoryClicks;
 import dev.nifte.mixin.AbstractContainerScreenAccessor;
 
@@ -23,12 +26,25 @@ public final class ContainerSortFeature {
 	}
 
 	public static boolean handleClick(AbstractContainerScreen<?> screen, MouseButtonEvent event) {
-		if (!NifteConfig.get().containerSortEnabled || screen instanceof CreativeModeInventoryScreen) {
-			return false;
-		}
+		return enabled(screen) && NifteKeybinds.sortContainer.matchesMouse(event) && sortHovered(screen);
+	}
 
+	public static boolean handleKey(AbstractContainerScreen<?> screen, KeyEvent event) {
+		return enabled(screen)
+			&& !(screen.getFocused() instanceof EditBox)
+			&& NifteKeybinds.sortContainer.matches(event)
+			&& sortHovered(screen);
+	}
+
+	private static boolean enabled(AbstractContainerScreen<?> screen) {
+		return NifteConfig.get().containerSortEnabled
+			&& NifteKeybinds.isBound(NifteKeybinds.sortContainer)
+			&& !(screen instanceof CreativeModeInventoryScreen);
+	}
+
+	private static boolean sortHovered(AbstractContainerScreen<?> screen) {
 		Minecraft minecraft = Minecraft.getInstance();
-		if (minecraft.player == null || minecraft.options == null || !minecraft.options.keyPickItem.matchesMouse(event)) {
+		if (minecraft.player == null) {
 			return false;
 		}
 
