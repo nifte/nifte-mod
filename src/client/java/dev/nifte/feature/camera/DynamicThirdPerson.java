@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.phys.Vec2;
 
 import org.jspecify.annotations.Nullable;
@@ -84,10 +85,11 @@ public final class DynamicThirdPerson {
 		capture(player);
 		cameraYaw += (float) yawInput * TURN_SCALE;
 		cameraPitch = Mth.clamp(cameraPitch + (float) pitchInput * TURN_SCALE, -90.0F, 90.0F);
+		player.setXRot(cameraPitch);
 		return true;
 	}
 
-	public static @Nullable Vec2 apply(LocalPlayer player) {
+	public static @Nullable RemappedInput apply(LocalPlayer player) {
 		if (!isActive() || player != Minecraft.getInstance().player) {
 			release();
 			return null;
@@ -99,6 +101,8 @@ public final class DynamicThirdPerson {
 			return null;
 		}
 
+		player.setXRot(cameraPitch);
+
 		Vec2 move = player.input.getMoveVector();
 		if (move.lengthSquared() < 1.0E-6F) {
 			return null;
@@ -107,8 +111,12 @@ public final class DynamicThirdPerson {
 		float targetYaw = cameraYaw - (float) Mth.atan2(move.x, move.y) * (180.0F / (float) Math.PI);
 		player.setYRot(targetYaw);
 		player.setYHeadRot(targetYaw);
-		player.setXRot(cameraPitch);
-		return new Vec2(0.0F, move.length());
+
+		Input previous = player.input.keyPresses;
+		return new RemappedInput(
+			new Vec2(0.0F, move.length()),
+			new Input(true, false, false, false, previous.jump(), previous.shift(), previous.sprint())
+		);
 	}
 
 	private static boolean followLookWhileGliding(LocalPlayer player) {
@@ -147,5 +155,8 @@ public final class DynamicThirdPerson {
 
 		controlling = false;
 		controlledPlayer = null;
+	}
+
+	public record RemappedInput(Vec2 move, Input keys) {
 	}
 }

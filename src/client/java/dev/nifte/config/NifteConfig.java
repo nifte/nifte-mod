@@ -18,6 +18,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 import dev.nifte.Nifte;
+import dev.nifte.hud.PlayerTracers;
 
 public final class NifteConfig {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -87,11 +88,12 @@ public final class NifteConfig {
 	public boolean autoToolFromInventory = false;
 	public boolean autoWeaponEnabled = false;
 	public boolean autoWeaponFromInventory = false;
-	public ToolProtectMode toolProtectMode = ToolProtectMode.ALL_TOOLS;
+	public ToolProtectMode toolProtectMode = ToolProtectMode.DISABLED;
 	public boolean bedrockBridgingEnabled = false;
 	public boolean fastBlockPlacementEnabled = false;
 	public boolean blockRestockEnabled = false;
 	public boolean bucketRestockEnabled = false;
+	public boolean consumableRestockEnabled = false;
 	public boolean noBreakDelayEnabled = false;
 
 	public boolean unlockAllRecipes = true;
@@ -107,12 +109,16 @@ public final class NifteConfig {
 	public boolean hideDeadMobs = false;
 	public boolean highlightHostileMobs = false;
 	public boolean highlightOtherPlayers = false;
+	public boolean playerTracersEnabled = false;
+	public int playerTracersRange = PlayerTracers.RANGE_DEFAULT;
 	public boolean ignoreGrassInCombat = false;
 	public boolean quickEatEnabled = true;
 	public boolean quickUseEnabled = true;
 	public boolean projectileTrajectoryEnabled = true;
 
 	public List<String> disabledParticles = new ArrayList<>();
+
+	public String lastConfigCategory = "nifte.config.hud";
 
 	private NifteConfig() {
 	}
@@ -150,6 +156,7 @@ public final class NifteConfig {
 				}
 
 				loaded.mobHealthReach = Mth.clamp(loaded.mobHealthReach, 1, 20);
+				loaded.playerTracersRange = Mth.clamp(loaded.playerTracersRange, PlayerTracers.RANGE_MIN, PlayerTracers.RANGE_MAX);
 
 				if (loaded.dropConfirmMode == null) {
 					loaded.dropConfirmMode = DropConfirmMode.DISABLED;
@@ -160,7 +167,7 @@ public final class NifteConfig {
 				}
 
 				if (loaded.toolProtectMode == null) {
-					loaded.toolProtectMode = ToolProtectMode.ALL_TOOLS;
+					loaded.toolProtectMode = ToolProtectMode.DISABLED;
 				}
 
 				if (json.has("toolProtectEnabled") && !json.has("toolProtectMode")) {
@@ -208,6 +215,29 @@ public final class NifteConfig {
 	}
 
 	public static void save() {
+		if (NifteConfigPreview.isOpen()) {
+			return;
+		}
+
+		write();
+	}
+
+	NifteConfig copy() {
+		NifteConfig copy = GSON.fromJson(GSON.toJson(this), NifteConfig.class);
+		if (copy.disabledParticles == null) {
+			copy.disabledParticles = new ArrayList<>();
+		} else {
+			copy.disabledParticles = new ArrayList<>(copy.disabledParticles);
+		}
+
+		return copy;
+	}
+
+	static void restore(NifteConfig snapshot) {
+		instance = snapshot.copy();
+	}
+
+	static void write() {
 		try {
 			Files.createDirectories(PATH.getParent());
 			try (Writer writer = Files.newBufferedWriter(PATH)) {

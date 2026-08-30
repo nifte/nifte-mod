@@ -10,6 +10,7 @@ import dev.nifte.feature.camera.AutoThirdPerson;
 import dev.nifte.feature.elytra.AutoElytraFeature;
 import dev.nifte.feature.quickuse.QuickUseFeature;
 import dev.nifte.feature.recipes.RecipeFeatures;
+import dev.nifte.feature.restock.HandRestockFeature;
 import dev.nifte.hud.ArmorHud;
 import dev.nifte.hud.CompassHud;
 import dev.nifte.hud.FpsHud;
@@ -26,6 +27,7 @@ public final class NifteClient implements ClientModInitializer {
 		QuickUseFeature.register();
 		AutoTotemFeature.register();
 		AutoElytraFeature.register();
+		HandRestockFeature.register();
 		RecipeFeatures.register();
 		HudElementRegistry.attachElementBefore(VanillaHudElements.BOSS_BAR, Nifte.id("compass"), CompassHud::extract);
 		HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, Nifte.id("fps"), FpsHud::extract);

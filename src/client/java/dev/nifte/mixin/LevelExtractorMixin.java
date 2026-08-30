@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import dev.nifte.feature.bridge.BedrockBridging;
+import dev.nifte.hud.PlayerTracers;
 import dev.nifte.hud.ProjectileTrajectory;
 
 @Mixin(LevelExtractor.class)
@@ -35,6 +36,7 @@ public abstract class LevelExtractorMixin {
 	)
 	private void nifte$projectileTrajectory(DeltaTracker deltaTracker, Camera camera, float deltaPartialTick, CallbackInfo ci) {
 		ProjectileTrajectory.emit(this.minecraft, camera, deltaPartialTick);
+		PlayerTracers.emit(this.minecraft, camera, deltaPartialTick);
 	}
 
 	@Inject(method = "extractBlockOutline", at = @At("RETURN"))

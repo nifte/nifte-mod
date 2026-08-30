@@ -92,6 +92,178 @@ publishing {
 	}
 }
 
+def jarTask = tasks.named("jar", Jar)
+
+def copyJarToModrinthProfile() {
+	def destDir = file(project.modrinth_dev_mods)
+	def builtJar = tasks.named("jar", Jar).get().archiveFile.get().asFile
+	destDir.mkdirs()
+	destDir.eachFile { file ->
+		if (file.name.startsWith("nifte-") && file.name.endsWith(".jar")) {
+			file.delete()
+		}
+	}
+	copy {
+		from builtJar
+		into destDir
+	}
+}
+
+tasks.register("copyToModrinthProfile") {
+	group = "build"
+	description = "Copies the remapped Nifte jar into the Modrinth Dev profile, replacing any previous Nifte jar."
+	dependsOn jarTask
+
+	doLast {
+		copyJarToModrinthProfile()
+	}
+}
+
+def resolveModrinthInstanceId(String profileName) {
+	def configured = project.findProperty("modrinth_dev_instance_id")
+	if (configured) {
+		return configured.toString()
+	}
+
+	def db = file("${System.getenv("APPDATA")}/ModrinthApp/app.db")
+	if (!db.file) {
+		throw new GradleException("Modrinth app database not found at ${db}")
+	}
+
+	def script = """
+const { DatabaseSync } = require("node:sqlite");
+const db = new DatabaseSync(process.argv[1], { readOnly: true });
+const name = process.argv[2];
+const row = db.prepare("SELECT id FROM instances WHERE path = ? OR name = ?").get(name, name);
+if (!row) process.exit(2);
+process.stdout.write(row.id);
+"""
+	def stdout = new ByteArrayOutputStream()
+	def stderr = new ByteArrayOutputStream()
+	def lookup = new ProcessBuilder("node", "--experimental-sqlite", "-e", script, db.absolutePath, profileName).start()
+	lookup.consumeProcessOutput(stdout, stderr)
+	if (lookup.waitFor() == 0) {
+		return stdout.toString().trim()
+	}
+
+	def matcher = (db.getText("ISO-8859-1") =~ /(local:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})${java.util.regex.Pattern.quote(profileName)}/)
+	if (matcher.find()) {
+		return matcher.group(1)
+	}
+
+	throw new GradleException("Could not find Modrinth instance '${profileName}'. ${stderr}")
+}
+
+def killMinecraftProcesses() {
+	def script = '''
+Get-CimInstance Win32_Process |
+	Where-Object {
+		$_.Name -match '^(java|javaw|minecraft)\\.exe$' -and
+		$_.CommandLine -match 'net\\.fabricmc\\.loader|net\\.minecraft\\.client\\.main\\.Main|com\\.modrinth\\.theseus\\.MinecraftLaunch|ModrinthApp\\\\profiles\\\\'
+	} |
+	ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+'''
+	def killer = new ProcessBuilder("powershell", "-NoProfile", "-Command", script).start()
+	killer.waitFor()
+
+	def deadline = System.currentTimeMillis() + 10000
+	while (minecraftClientRunning()) {
+		if (System.currentTimeMillis() > deadline) {
+			throw new GradleException("Minecraft was still running after being asked to stop")
+		}
+		Thread.sleep(250)
+	}
+	// Give Modrinth a moment to drop the instance from its process list.
+	Thread.sleep(1000)
+}
+
+def minecraftClientRunning() {
+	def script = '''
+$running = Get-CimInstance Win32_Process |
+	Where-Object {
+		$_.Name -match '^(java|javaw|minecraft)\\.exe$' -and
+		$_.CommandLine -match 'net\\.fabricmc\\.loader|net\\.minecraft\\.client\\.main\\.Main|com\\.modrinth\\.theseus\\.MinecraftLaunch|ModrinthApp\\\\profiles\\\\'
+	}
+if ($running) { exit 0 } else { exit 1 }
+'''
+	def check = new ProcessBuilder("powershell", "-NoProfile", "-Command", script).start()
+	return check.waitFor() == 0
+}
+
+def startDetached(String executable, String... args) {
+	def argumentList = args.collect { "'${it.replace("'", "''")}'" }.join(",")
+	def command = args.length == 0
+		? "Start-Process -FilePath '${executable.replace("'", "''")}'"
+		: "Start-Process -FilePath '${executable.replace("'", "''")}' -ArgumentList ${argumentList}"
+	def started = new ProcessBuilder("powershell", "-NoProfile", "-Command", command).start()
+	if (started.waitFor() != 0) {
+		throw new GradleException("Failed to start ${executable}")
+	}
+}
+
+def modrinthAppRunning() {
+	def stdout = new ByteArrayOutputStream()
+	def check = new ProcessBuilder("tasklist", "/FI", "IMAGENAME eq Modrinth App.exe", "/NH").start()
+	check.consumeProcessOutput(stdout, new ByteArrayOutputStream())
+	check.waitFor()
+	return stdout.toString().contains("Modrinth App.exe")
+}
+
+def waitForModrinthApp() {
+	def deadline = System.currentTimeMillis() + 20000
+	while (!modrinthAppRunning()) {
+		if (System.currentTimeMillis() > deadline) {
+			throw new GradleException("Modrinth App did not stay running")
+		}
+		Thread.sleep(250)
+	}
+	// The Vue frontend only handles launch URLs after it finishes booting.
+	Thread.sleep(5000)
+}
+
+def isExplicitTestRequest() {
+	gradle.startParameter.taskNames.any { name ->
+		name == "test" || name.endsWith(":test")
+	}
+}
+
+def launchModrinthDev = tasks.register("launchModrinthDev") {
+	group = "fabric"
+	description = "Copies the Nifte jar into the Modrinth Dev profile and launches that instance."
+	dependsOn jarTask
+	onlyIf { isExplicitTestRequest() }
+
+	doLast {
+		copyJarToModrinthProfile()
+
+		def profileName = project.modrinth_dev_profile.toString()
+		def instanceId = resolveModrinthInstanceId(profileName)
+		def uri = "modrinth://launch/instance/${instanceId}"
+		def appExe = file("${System.getenv("LOCALAPPDATA")}/Modrinth App/Modrinth App.exe")
+		if (!appExe.file) {
+			throw new GradleException("Modrinth App not found at ${appExe}")
+		}
+
+		logger.lifecycle("Launching Modrinth profile '${profileName}' (${instanceId})")
+		if (minecraftClientRunning()) {
+			logger.lifecycle("Stopping the running Minecraft client")
+			killMinecraftProcesses()
+		}
+		if (!modrinthAppRunning()) {
+			logger.lifecycle("Starting Modrinth App and waiting for it to finish loading")
+			startDetached(appExe.absolutePath)
+			waitForModrinthApp()
+		}
+		startDetached(appExe.absolutePath, uri)
+	}
+}
+
+tasks.named("test", Test).configure { testTask ->
+	testTask.group = "fabric"
+	testTask.description = "Copies the Nifte jar into the Modrinth Dev profile and launches that instance."
+	testTask.finalizedBy launchModrinthDev
+}
+
 modrinth {
 	token = System.getenv("MODRINTH_TOKEN")
 	projectId = project.modrinth_id

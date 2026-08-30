@@ -4,7 +4,9 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MobBucketItem;
+import net.minecraft.world.item.PotionItem;
 import net.minecraft.world.item.SolidBucketItem;
 
 import dev.nifte.config.NifteConfig;
@@ -19,7 +21,26 @@ final class HandRestockItems {
 			return config.blockRestockEnabled;
 		}
 
-		return isLiquidBucket(stack) && config.bucketRestockEnabled;
+		if (isLiquidBucket(stack)) {
+			return config.bucketRestockEnabled;
+		}
+
+		return isConsumable(stack) && config.consumableRestockEnabled;
+	}
+
+	static boolean isConsumable(ItemStack stack) {
+		return isPotion(stack) || isStew(stack);
+	}
+
+	private static boolean isPotion(ItemStack stack) {
+		return stack.getItem() instanceof PotionItem;
+	}
+
+	private static boolean isStew(ItemStack stack) {
+		return stack.is(Items.MUSHROOM_STEW)
+			|| stack.is(Items.RABBIT_STEW)
+			|| stack.is(Items.BEETROOT_SOUP)
+			|| stack.is(Items.SUSPICIOUS_STEW);
 	}
 
 	private static boolean isBlock(ItemStack stack) {

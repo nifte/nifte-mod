@@ -3,6 +3,7 @@ package dev.nifte.feature.dropconfirm;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ProjectileWeaponItem;
 
 final class DropConfirmItems {
 	private DropConfirmItems() {
@@ -13,7 +14,8 @@ final class DropConfirmItems {
 			return false;
 		}
 
-		if (stack.has(DataComponents.TOOL)
+		if (stack.getItem() instanceof ProjectileWeaponItem
+			|| stack.has(DataComponents.TOOL)
 			|| stack.has(DataComponents.WEAPON)
 			|| stack.has(DataComponents.PIERCING_WEAPON)
 			|| stack.has(DataComponents.KINETIC_WEAPON)) {
@@ -29,6 +31,8 @@ final class DropConfirmItems {
 			|| stack.is(ItemTags.WEAPON_ENCHANTABLE)
 			|| stack.is(ItemTags.MINING_ENCHANTABLE)
 			|| stack.is(ItemTags.SHARP_WEAPON_ENCHANTABLE)
-			|| stack.is(ItemTags.MELEE_WEAPON_ENCHANTABLE);
+			|| stack.is(ItemTags.MELEE_WEAPON_ENCHANTABLE)
+			|| stack.is(ItemTags.BOW_ENCHANTABLE)
+			|| stack.is(ItemTags.CROSSBOW_ENCHANTABLE);
 	}
 }

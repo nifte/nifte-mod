@@ -17,6 +17,7 @@ import dev.nifte.feature.food.QuickEatFeature;
 import dev.nifte.feature.fullbright.FullbrightFeature;
 import dev.nifte.feature.glow.EntityGlowFeature;
 import dev.nifte.feature.zoom.ZoomFeature;
+import dev.nifte.hud.PlayerTracers;
 
 public final class NifteKeybinds {
 	public static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(Nifte.id("nifte"));
@@ -27,6 +28,7 @@ public final class NifteKeybinds {
 	public static KeyMapping autoWeapon;
 	public static KeyMapping highlightHostileMobs;
 	public static KeyMapping highlightOtherPlayers;
+	public static KeyMapping playerTracers;
 	public static KeyMapping zoom;
 	public static KeyMapping quickEat;
 	public static KeyMapping sortContainer;
@@ -72,6 +74,12 @@ public final class NifteKeybinds {
 		));
 		highlightOtherPlayers = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.highlight_other_players",
+			InputConstants.Type.KEYSYM,
+			GLFW.GLFW_KEY_UNKNOWN,
+			CATEGORY
+		));
+		playerTracers = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+			"key.nifte.player_tracers",
 			InputConstants.Type.KEYSYM,
 			GLFW.GLFW_KEY_UNKNOWN,
 			CATEGORY
@@ -129,6 +137,10 @@ public final class NifteKeybinds {
 
 		while (highlightOtherPlayers.consumeClick()) {
 			EntityGlowFeature.toggleOtherPlayers();
+		}
+
+		while (playerTracers.consumeClick()) {
+			PlayerTracers.toggle();
 		}
 
 		ZoomFeature.tick();

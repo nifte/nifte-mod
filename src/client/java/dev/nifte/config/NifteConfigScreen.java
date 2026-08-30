@@ -9,6 +9,7 @@ import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import me.shedaniel.clothconfig2.gui.AbstractConfigScreen;
 import me.shedaniel.clothconfig2.gui.entries.BooleanListEntry;
 import me.shedaniel.clothconfig2.gui.entries.TooltipListEntry;
 import me.shedaniel.clothconfig2.impl.builders.BooleanToggleBuilder;
@@ -16,6 +17,7 @@ import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
@@ -25,6 +27,7 @@ import net.minecraft.util.Mth;
 import dev.nifte.feature.overlay.FireOverlayFeature;
 import dev.nifte.feature.overlay.ShieldOverlayFeature;
 import dev.nifte.feature.particles.ParticleGroups;
+import dev.nifte.hud.PlayerTracers;
 import dev.nifte.input.NifteKeybinds;
 
 public final class NifteConfigScreen {
@@ -40,11 +43,14 @@ public final class NifteConfigScreen {
 
 	public static Screen create(Screen parent) {
 		ConfigKeybindEditor.clear();
+		rememberOpenCategory(parent);
+		NifteConfigPreview.begin();
 		NifteConfig config = NifteConfig.get();
 		ConfigBuilder builder = ConfigBuilder.create()
 			.setParentScreen(parent)
 			.setTitle(Component.translatable("nifte.config.title"))
-			.setSavingRunnable(NifteConfig::save);
+			.setSavingRunnable(NifteConfigPreview::commit)
+			.setTransparentBackground(Minecraft.getInstance().level != null);
 		ConfigEntryBuilder entries = builder.entryBuilder();
 
 		addHudCategory(builder, entries, config);
@@ -56,7 +62,9 @@ public final class NifteConfigScreen {
 		addCraftingCategory(builder, entries, config);
 		addUiCategory(builder, entries, config);
 		addParticlesCategory(builder, entries, config);
-		return builder.build();
+		Screen screen = builder.build();
+		selectLastCategory(screen, config.lastConfigCategory);
+		return screen;
 	}
 
 	private static void addHudCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
@@ -327,7 +335,7 @@ public final class NifteConfigScreen {
 				.build()
 		);
 		addEntry(category, entries.startEnumSelector(Component.translatable("nifte.config.tool_protect"), ToolProtectMode.class, config.toolProtectMode)
-			.setDefaultValue(ToolProtectMode.ALL_TOOLS)
+			.setDefaultValue(ToolProtectMode.DISABLED)
 			.setEnumNameProvider(mode -> ((ToolProtectMode) mode).optionLabel())
 			.setTooltip(tooltip("nifte.config.tool_protect"))
 			.setSaveConsumer(value -> config.toolProtectMode = value)
@@ -335,6 +343,10 @@ public final class NifteConfigScreen {
 		addEntry(category, booleanToggle(entries, "nifte.config.bucket_restock", config.bucketRestockEnabled)
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.bucketRestockEnabled = value)
+			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.consumable_restock", config.consumableRestockEnabled)
+			.setDefaultValue(false)
+			.setSaveConsumer(value -> config.consumableRestockEnabled = value)
 			.build());
 	}
 
@@ -377,6 +389,30 @@ public final class NifteConfigScreen {
 			NifteKeybinds.highlightOtherPlayers,
 			value -> config.highlightOtherPlayers = value
 		));
+		addEntry(category, keybindToggle(
+			entries,
+			"nifte.config.player_tracers",
+			config.playerTracersEnabled,
+			false,
+			NifteKeybinds.playerTracers,
+			value -> config.playerTracersEnabled = value
+		));
+		addSettings(
+			category,
+			entries,
+			"nifte.config.player_tracers",
+			entries.startIntSlider(
+				Component.translatable("nifte.config.player_tracers.range"),
+				config.playerTracersRange,
+				PlayerTracers.RANGE_MIN,
+				PlayerTracers.RANGE_MAX
+			)
+				.setDefaultValue(PlayerTracers.RANGE_DEFAULT)
+				.setTextGetter(NifteConfigScreen::playerTracersRangeLabel)
+				.setTooltip(tooltip("nifte.config.player_tracers.range"))
+				.setSaveConsumer(value -> config.playerTracersRange = value)
+				.build()
+		);
 		addEntry(category, booleanToggle(entries, "nifte.config.trajectory", config.projectileTrajectoryEnabled)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.projectileTrajectoryEnabled = value)
@@ -595,6 +631,13 @@ public final class NifteConfigScreen {
 		return Component.translatable(key, blocks);
 	}
 
+	private static Component playerTracersRangeLabel(int blocks) {
+		String key = blocks == 1
+			? "nifte.config.player_tracers.range.value.singular"
+			: "nifte.config.player_tracers.range.value";
+		return Component.translatable(key, blocks);
+	}
+
 	private static Component overlayOffsetLabel(int hundredths) {
 		return Component.translatable(
 			"nifte.config.overlay.offset.value",
@@ -662,5 +705,61 @@ public final class NifteConfigScreen {
 		}
 
 		return "nifte.config.title".equals(contents.getKey());
+	}
+
+	public static boolean rememberOpenCategory(Screen screen) {
+		if (!isNifteScreen(screen) || !(screen instanceof AbstractConfigScreen configScreen)) {
+			return false;
+		}
+
+		String key = categoryKeyAt(configScreen, configScreen.selectedCategoryIndex);
+		if (key == null) {
+			return false;
+		}
+
+		NifteConfig config = NifteConfig.get();
+		if (key.equals(config.lastConfigCategory)) {
+			return false;
+		}
+
+		config.lastConfigCategory = key;
+		return true;
+	}
+
+	private static void selectLastCategory(Screen screen, String key) {
+		if (!(screen instanceof AbstractConfigScreen configScreen) || key == null || key.isEmpty()) {
+			return;
+		}
+
+		int index = 0;
+		for (Component category : configScreen.getCategorizedEntries().keySet()) {
+			if (key.equals(categoryKey(category))) {
+				configScreen.selectedCategoryIndex = index;
+				return;
+			}
+
+			index++;
+		}
+	}
+
+	private static String categoryKeyAt(AbstractConfigScreen screen, int index) {
+		int current = 0;
+		for (Component category : screen.getCategorizedEntries().keySet()) {
+			if (current == index) {
+				return categoryKey(category);
+			}
+
+			current++;
+		}
+
+		return null;
+	}
+
+	private static String categoryKey(Component category) {
+		if (category != null && category.getContents() instanceof TranslatableContents contents) {
+			return contents.getKey();
+		}
+
+		return null;
 	}
 }

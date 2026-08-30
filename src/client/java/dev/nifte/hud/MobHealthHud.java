@@ -9,6 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 import org.jspecify.annotations.Nullable;
 
 import dev.nifte.config.NifteConfig;
+import dev.nifte.config.NifteConfigPreview;
 
 public final class MobHealthHud {
 	private static @Nullable LivingEntity remembered;
@@ -20,7 +21,11 @@ public final class MobHealthHud {
 	public static void extract(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
 		NifteConfig config = NifteConfig.get();
 		Minecraft minecraft = Minecraft.getInstance();
-		if (!config.mobHealthEnabled || minecraft.player == null || minecraft.gui.hud.isHidden() || minecraft.gui.screen() != null) {
+		if (!config.mobHealthEnabled || minecraft.player == null || minecraft.gui.hud.isHidden()) {
+			return;
+		}
+
+		if (minecraft.gui.screen() != null && !NifteConfigPreview.isOpen()) {
 			return;
 		}
 
@@ -31,14 +36,16 @@ public final class MobHealthHud {
 		}
 
 		int containers = MobHealthHearts.containers(target);
-		int width = MobHealthHudLayout.width(containers);
-		int height = MobHealthHudLayout.height(containers);
+		int armor = MobHealthArmor.of(target);
+		int width = MobHealthHudLayout.width(containers, armor);
+		int height = MobHealthHudLayout.height(containers, armor);
 		int x = HudLayout.x(config.mobHealthAnchor, graphics.guiWidth(), config.mobHealthOffsetX, Math.round(width * config.mobHealthScale));
 		int y = HudLayout.y(config.mobHealthAnchor, graphics.guiHeight(), config.mobHealthOffsetY, Math.round(height * config.mobHealthScale));
-		int previewX = x + Math.round(MobHealthHudLayout.previewX(config.mobHealthAnchor, containers) * config.mobHealthScale);
-		int previewY = y + Math.round(MobHealthHudLayout.previewY(containers) * config.mobHealthScale);
+		int previewX = x + Math.round(MobHealthHudLayout.previewX(config.mobHealthAnchor, containers, armor) * config.mobHealthScale);
+		int previewY = y + Math.round(MobHealthHudLayout.previewY(containers, armor) * config.mobHealthScale);
 		int previewWidth = Math.round(MobHealthHudLayout.PREVIEW_WIDTH * config.mobHealthScale);
 		int previewHeight = Math.round(MobHealthHudLayout.PREVIEW_HEIGHT * config.mobHealthScale);
+		int barsX = MobHealthHudLayout.barsX(config.mobHealthAnchor, containers, armor);
 
 		MobHealthPreview.extract(
 			graphics,
@@ -53,12 +60,8 @@ public final class MobHealthHud {
 		graphics.pose().pushMatrix();
 		graphics.pose().translate(x, y);
 		graphics.pose().scale(config.mobHealthScale, config.mobHealthScale);
-		MobHealthHearts.draw(
-			graphics,
-			target,
-			MobHealthHudLayout.heartsX(config.mobHealthAnchor, containers),
-			MobHealthHudLayout.heartsY(containers)
-		);
+		MobHealthArmor.draw(graphics, armor, barsX, MobHealthHudLayout.armorY(containers, armor));
+		MobHealthHearts.draw(graphics, target, barsX, MobHealthHudLayout.heartsY(containers, armor));
 		graphics.pose().popMatrix();
 	}
 

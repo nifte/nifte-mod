@@ -5,6 +5,7 @@
   "client": [
     "AbstractConfigEntryMixin",
     "AbstractConfigScreenMixin",
+    "AbstractConfigScreenQuitSaveConsumerMixin",
     "AbstractContainerScreenAccessor",
     "AbstractContainerScreenMixin",
     "AbstractRecipeBookScreenAccessor",
@@ -18,6 +19,7 @@
     "ClientRecipeBookMixin",
     "ClientTooltipComponentMixin",
     "CreativeModeInventoryScreenMixin",
+    "ElementEntryMixin",
     "EntityRenderDispatcherMixin",
     "FogRendererMixin",
     "GameRendererMixin",

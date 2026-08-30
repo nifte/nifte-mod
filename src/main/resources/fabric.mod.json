@@ -1,38 +1,32 @@
 {
-	"schemaVersion": 1,
-	"id": "nifte",
-	"version": "${version}",
-	"name": "Nifte Mod",
-	"description": "A client-side QOL mod with lots of toggleable features.",
-	"authors": [
-		"Nifte"
-	],
-	"contact": {},
-	"license": "CC0-1.0",
-	"icon": "assets/nifte/icon.png",
-	"environment": "client",
-	"entrypoints": {
-		"client": [
-			"dev.nifte.NifteClient"
-		],
-		"modmenu": [
-			"dev.nifte.config.ModMenuIntegration"
-		]
-	},
-	"mixins": [
-		{
-			"config": "nifte.client.mixins.json",
-			"environment": "client"
-		}
-	],
-	"depends": {
-		"fabricloader": ">=0.19.3",
-		"minecraft": "~26.2",
-		"java": ">=25",
-		"fabric-api": "*",
-		"cloth-config": "*"
-	},
-	"suggests": {
-		"modmenu": "*"
-	}
+  "schemaVersion": 1,
+  "id": "nifte",
+  "version": "${version}",
+  "name": "Nifte Mod",
+  "description": "A client side QOL mod with lots of toggleable features.",
+  "authors": ["Nifte"],
+  "contact": {},
+  "license": "CC0-1.0",
+  "icon": "assets/nifte/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.nifte.NifteClient"],
+    "modmenu": ["dev.nifte.config.ModMenuIntegration"]
+  },
+  "mixins": [
+    {
+      "config": "nifte.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "fabric-api": "*",
+    "cloth-config": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
 }

@@ -19,7 +19,7 @@ This mod is **client-only**. It does not need to be installed on servers.
 - FPS counter with position, scale, and color
 - Armor durability display, including held items
 - Potion effect timers on status icons
-- Mob and player health overlay when looking at them, with a 3D preview
+- Mob and player health overlay when looking at them, with a 3D preview and armor
 - Scrolling compass at the top of the screen
 
 ### Camera
@@ -51,12 +51,14 @@ This mod is **client-only**. It does not need to be installed on servers.
 - Auto tool swap, optionally from the full inventory
 - Auto weapon swap, optionally from the full inventory
 - Stop tools from breaking
+- Consumable restocking for potions and stew
 
 ### Combat
 
 - Remove mob death animations
 - Highlight hostile mobs
 - Highlight other players
+- Player tracers from your cursor to nearby players, with a range setting
 - Projectile trajectory preview
 - Attack through tall grass without breaking it
 - Keep sprinting when you bump into a wall
