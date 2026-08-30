@@ -62,6 +62,7 @@ public final class NifteConfig {
 
 	public boolean zoomEnabled = true;
 	public float zoomFov = 30.0F;
+	public ZoomTransition zoomTransition = ZoomTransition.SMOOTH;
 
 	public boolean fullbrightEnabled = false;
 	public boolean disableFog = false;
@@ -164,6 +165,10 @@ public final class NifteConfig {
 
 				if (json.has("dropConfirmEnabled") && !json.get("dropConfirmEnabled").getAsBoolean()) {
 					loaded.dropConfirmMode = DropConfirmMode.DISABLED;
+				}
+
+				if (loaded.zoomTransition == null) {
+					loaded.zoomTransition = ZoomTransition.SMOOTH;
 				}
 
 				if (loaded.toolProtectMode == null) {

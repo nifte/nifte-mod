@@ -16,7 +16,7 @@ import dev.nifte.feature.zoom.ZoomFeature;
 public abstract class CameraMixin {
 	@Inject(method = "calculateFov", at = @At("RETURN"), cancellable = true)
 	private void nifte$zoom(float partialTicks, CallbackInfoReturnable<Float> cir) {
-		cir.setReturnValue(ZoomFeature.modifyFov(cir.getReturnValue()));
+		cir.setReturnValue(ZoomFeature.modifyFov(cir.getReturnValue(), partialTicks));
 	}
 
 	@Redirect(

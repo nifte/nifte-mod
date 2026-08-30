@@ -24,6 +24,7 @@ import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.WindChargeItem;
 import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import org.jspecify.annotations.Nullable;
@@ -65,11 +66,16 @@ public final class ProjectileTrajectory {
 
 		Vec3 visualStart = ProjectileTrajectoryOrigin.visual(minecraft, camera, player, shot.hand(), shot.stack(), partialTick);
 		List<Vec3> points = ProjectileTrajectoryPath.fromHand(physics, visualStart);
-		for (int i = 1; i < points.size(); i++) {
-			Gizmos.line(points.get(i - 1), points.get(i), COLOR, LINE_WIDTH).setAlwaysOnTop();
+		Vec3 cameraPos = camera.position();
+		List<AABB> occluders = HudLineOcclusion.occluderBoxes(minecraft.level, player, cameraPos, points, partialTick);
+		for (List<Vec3> span : HudLineOcclusion.visibleSpans(minecraft.level, cameraPos, points, occluders)) {
+			HudLines.polyline(minecraft, camera, span, COLOR, LINE_WIDTH, true);
 		}
 
-		Gizmos.point(points.getLast(), COLOR, END_DOT_SIZE).setAlwaysOnTop();
+		Vec3 impact = points.getLast();
+		if (HudLineOcclusion.visible(minecraft.level, cameraPos, impact, occluders)) {
+			Gizmos.point(impact, COLOR, END_DOT_SIZE).setAlwaysOnTop();
+		}
 	}
 
 	private static @Nullable Shot resolve(LocalPlayer player, float partialTick) {

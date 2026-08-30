@@ -3,7 +3,6 @@ package dev.nifte.hud;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.gizmos.Gizmos;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -48,7 +47,7 @@ public final class PlayerTracers {
 				continue;
 			}
 
-			Gizmos.line(start, PlayerTracerGeometry.target(camera, player, partialTick), COLOR, LINE_WIDTH).setAlwaysOnTop();
+			HudLines.segment(minecraft, camera, start, PlayerTracerGeometry.target(camera, player, partialTick), COLOR, LINE_WIDTH, true);
 		}
 	}
 }

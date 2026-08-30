@@ -184,6 +184,15 @@ public final class NifteConfigScreen {
 			category,
 			entries,
 			"nifte.config.zoom",
+			entries.startEnumSelector(
+				Component.translatable("nifte.config.zoom.transition"),
+				ZoomTransition.class,
+				config.zoomTransition == null ? ZoomTransition.SMOOTH : config.zoomTransition
+			)
+				.setDefaultValue(ZoomTransition.SMOOTH)
+				.setTooltip(tooltip("nifte.config.zoom.transition"))
+				.setSaveConsumer(value -> config.zoomTransition = value)
+				.build(),
 			entries.startIntSlider(Component.translatable("nifte.config.zoom.fov"), zoomFov, 10, 70)
 				.setDefaultValue(30)
 				.setTextGetter(value -> Component.translatable("nifte.config.zoom.fov.value", value))
