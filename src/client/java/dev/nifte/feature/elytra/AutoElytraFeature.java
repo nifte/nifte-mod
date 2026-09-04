@@ -19,6 +19,7 @@ public final class AutoElytraFeature {
 
 	private static boolean wasAirborne;
 	private static boolean wasJumpDown;
+	private static boolean wasChestGlider;
 	private static boolean restorePending;
 
 	private AutoElytraFeature() {
@@ -32,19 +33,22 @@ public final class AutoElytraFeature {
 		boolean jumpDown = minecraft.options != null && minecraft.options.keyJump.isDown();
 		if (!NifteConfig.get().autoElytraEnabled || minecraft.player == null || minecraft.gameMode == null) {
 			wasJumpDown = jumpDown;
+			wasChestGlider = false;
+			restorePending = false;
 			return;
 		}
 
 		LocalPlayer player = minecraft.player;
 		boolean onGround = player.onGround();
-		if (wasAirborne && onGround && needsChestplate(minecraft)) {
+		boolean chestGlider = isChestGlider(minecraft);
+		if ((wasChestGlider && !chestGlider && needsChestplate(minecraft)) || (wasAirborne && onGround && chestGlider)) {
 			restorePending = true;
 		}
 
 		if (restorePending) {
 			if (!needsChestplate(minecraft)) {
 				restorePending = false;
-			} else if (onGround && equipBestChestplate(minecraft)) {
+			} else if ((onGround || !chestGlider) && equipBestChestplate(minecraft)) {
 				restorePending = false;
 			}
 		}
@@ -60,6 +64,7 @@ public final class AutoElytraFeature {
 
 		wasAirborne = airborne;
 		wasJumpDown = jumpDown;
+		wasChestGlider = isChestGlider(minecraft);
 	}
 
 	private static void tryTakeoff(Minecraft minecraft) {
