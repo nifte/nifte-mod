@@ -5,6 +5,10 @@ build/
 out/
 classes/
 
+# local decompile / mixin reference dumps
+
+.tmp-*/
+
 # eclipse
 
 *.launch
