@@ -16,60 +16,61 @@ This mod is **client-only**. It does not need to be installed on servers.
 
 ### HUD
 
-- FPS counter with position, scale, and color
-- Armor durability display, including held items
-- Potion effect timers on status icons
-- Mob and player health overlay when looking at them, with a 3D preview and armor
-- Scrolling compass at the top of the screen
+- FPS counter
+- Armor durability
+- Tool/weapon durability
+- Potion effect timers
+- Mob & player health/armor status
+- Compass
 
 ### Camera
 
-- Skip front-facing third person
-- Auto third person while flying or riding
-- Dynamic third person: the mouse looks around, and WASD aims relative to the camera
-- Zoom (hold; scroll to adjust FOV)
-- Fullbright
-- Disable terrain, water, lava, and status-effect fog
-- Lower first-person fire overlay
-- Lower first-person shields
-- Hide first-person held totems
+- Skip front facing third person view
+- Auto third person while flying/mounting
+- Dynamic third person
+- Zoom keybind
+- Full brightness
+- Disable terrain, water, lava, and fog
+- Lower first person fire overlay
+- Lower first person shields
+- Hide held totems
 
 ### Inventory
 
-- Scroll items between slots with the mouse wheel
-- Sort containers with the pick-block button
+- Move items with scroll wheel
+- Inventory/chest sorting
 - Improved item dragging
-- Drop confirmation for tools and weapons, enchanted items, or everything
+- Drop confirmation for valuable items
 - Move around while containers are open
-- Quick eat: hold a key to swap to food, eat, and swap back
-- Quick use: bind keys to use hotbar slots 1–9
+- Quick eat (bind a key to eat food)
+- Quick use (bind keys to use hotbar slots 1–9)
 
 ### Equipment
 
 - Auto totem refill
-- Auto elytra swap (elytra in the air, chestplate on landing)
-- Auto tool swap, optionally from the full inventory
-- Auto weapon swap, optionally from the full inventory
-- Stop tools from breaking
-- Consumable restocking for potions and stew
+- Auto elytra swap
+- Auto tool swap
+- Auto weapon swap
+- Prevent tool breaking
+- Consumable restocking
 
 ### Combat
 
-- Remove mob death animations
+- Hide death animations
 - Highlight hostile mobs
 - Highlight other players
-- Player tracers from your cursor to nearby players, with a range setting
-- Projectile trajectory preview
-- Attack through tall grass without breaking it
+- Player tracers
+- Projectile trajectory previews
+- Attack through foliage without breaking it
 - Keep sprinting when you bump into a wall
 
 ### Building
 
-- Bedrock-style bridging
-- Fast block placement, locked to the first clicked face
+- Bedrock style bridging
+- Fast block placement
 - Block restocking
 - Bucket restocking
-- No block-breaking delay
+- Remove mining delay
 
 ### Crafting
 
@@ -84,11 +85,11 @@ This mod is **client-only**. It does not need to be installed on servers.
 - Numerical ping in the player list
 - Hunger restored shown on food names and tooltips
 - Shulker box contents in tooltips
-- Optional advancement and recipe toast filters
+- Hide advancement and recipe notifications
 
 ### Particles
 
-- Toggle individual particle types on or off
+- Toggle individual particle types on/off
 
 ## License
 
