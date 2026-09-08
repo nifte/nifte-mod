@@ -1,8 +1,8 @@
 # Nifte Mod
 
-A client-side quality-of-life mod for Minecraft **26.2** (Fabric). Every feature can be turned on or off from the in-game settings screen (`N` by default, or through Mod Menu).
+A client side quality of life mod for Minecraft **26.2** (Fabric). Every feature can be turned on/off from the in game settings screen (`N` by default, or through Mod Menu).
 
-This mod is **client-only**. It does not need to be installed on servers.
+This mod is **client only**. It does not need to be installed on servers.
 
 ## Requirements
 
