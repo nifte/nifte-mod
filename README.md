@@ -30,7 +30,7 @@ This mod is **client-only**. It does not need to be installed on servers.
 - Dynamic third person
 - Zoom keybind
 - Full brightness
-- Disable terrain, water, lava, and fog
+- Disable fog
 - Lower first person fire overlay
 - Lower first person shields
 - Hide held totems
