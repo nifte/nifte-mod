@@ -24,9 +24,11 @@ import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
+import dev.nifte.feature.glow.EntityGlowFeature;
 import dev.nifte.feature.overlay.FireOverlayFeature;
 import dev.nifte.feature.overlay.ShieldOverlayFeature;
 import dev.nifte.feature.particles.ParticleGroups;
+import dev.nifte.feature.particles.ParticleTooltips;
 import dev.nifte.hud.PlayerTracers;
 import dev.nifte.input.NifteKeybinds;
 
@@ -390,6 +392,22 @@ public final class NifteConfigScreen {
 			NifteKeybinds.highlightHostileMobs,
 			value -> config.highlightHostileMobs = value
 		));
+		addSettings(
+			category,
+			entries,
+			"nifte.config.highlight_hostile_mobs",
+			entries.startIntSlider(
+				Component.translatable("nifte.config.highlight_hostile_mobs.range"),
+				config.highlightHostileMobsRange,
+				EntityGlowFeature.RANGE_MIN,
+				EntityGlowFeature.RANGE_MAX
+			)
+				.setDefaultValue(EntityGlowFeature.RANGE_DEFAULT)
+				.setTextGetter(NifteConfigScreen::highlightHostileMobsRangeLabel)
+				.setTooltip(tooltip("nifte.config.highlight_hostile_mobs.range"))
+				.setSaveConsumer(value -> config.highlightHostileMobsRange = value)
+				.build()
+		);
 		addEntry(category, keybindToggle(
 			entries,
 			"nifte.config.highlight_other_players",
@@ -398,6 +416,22 @@ public final class NifteConfigScreen {
 			NifteKeybinds.highlightOtherPlayers,
 			value -> config.highlightOtherPlayers = value
 		));
+		addSettings(
+			category,
+			entries,
+			"nifte.config.highlight_other_players",
+			entries.startIntSlider(
+				Component.translatable("nifte.config.highlight_other_players.range"),
+				config.highlightOtherPlayersRange,
+				EntityGlowFeature.RANGE_MIN,
+				EntityGlowFeature.RANGE_MAX
+			)
+				.setDefaultValue(EntityGlowFeature.RANGE_DEFAULT)
+				.setTextGetter(NifteConfigScreen::highlightOtherPlayersRangeLabel)
+				.setTooltip(tooltip("nifte.config.highlight_other_players.range"))
+				.setSaveConsumer(value -> config.highlightOtherPlayersRange = value)
+				.build()
+		);
 		addEntry(category, keybindToggle(
 			entries,
 			"nifte.config.player_tracers",
@@ -515,12 +549,22 @@ public final class NifteConfigScreen {
 			SubCategoryBuilder list = entries.startSubCategory(Component.translatable(group.langKey()));
 			list.setExpanded(false);
 			for (Identifier id : ids) {
-				boolean enabled = !config.isParticleDisabled(id);
-				list.add(booleanToggle(entries, Component.literal(ParticleGroups.label(id)), enabled)
+				list.add(booleanToggle(entries, Component.literal(ParticleGroups.label(id)), !config.isParticleDisabled(id))
 					.setDefaultValue(true)
-					.setTooltip(Component.translatable("nifte.config.particles.toggle.tooltip"))
+					.setTooltip(ParticleTooltips.describe(id))
 					.setSaveConsumer(value -> config.setParticleDisabled(id, !value))
 					.build());
+				if (ParticleTooltips.isEntityEffect(id)) {
+					list.add(booleanToggle(
+						entries,
+						Component.literal(ParticleTooltips.FIRST_PERSON_ENTITY_EFFECT_LABEL),
+						!config.hideFirstPersonEffectParticles
+					)
+						.setDefaultValue(true)
+						.setTooltip(ParticleTooltips.describeFirstPersonEntityEffect())
+						.setSaveConsumer(value -> config.hideFirstPersonEffectParticles = !value)
+						.build());
+				}
 			}
 
 			addEntry(category, list.build());
@@ -644,6 +688,20 @@ public final class NifteConfigScreen {
 		String key = blocks == 1
 			? "nifte.config.player_tracers.range.value.singular"
 			: "nifte.config.player_tracers.range.value";
+		return Component.translatable(key, blocks);
+	}
+
+	private static Component highlightHostileMobsRangeLabel(int blocks) {
+		String key = blocks == 1
+			? "nifte.config.highlight_hostile_mobs.range.value.singular"
+			: "nifte.config.highlight_hostile_mobs.range.value";
+		return Component.translatable(key, blocks);
+	}
+
+	private static Component highlightOtherPlayersRangeLabel(int blocks) {
+		String key = blocks == 1
+			? "nifte.config.highlight_other_players.range.value.singular"
+			: "nifte.config.highlight_other_players.range.value";
 		return Component.translatable(key, blocks);
 	}
 

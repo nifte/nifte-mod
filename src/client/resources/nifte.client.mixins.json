@@ -33,6 +33,7 @@
     "KeyMappingMixin",
     "LevelExtractorMixin",
     "LightmapRenderStateExtractorMixin",
+    "LivingEntityMixin",
     "LocalPlayerMixin",
     "MinecraftMixin",
     "MultiPlayerGameModeMixin",

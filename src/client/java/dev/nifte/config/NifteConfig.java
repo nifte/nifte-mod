@@ -18,6 +18,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 import dev.nifte.Nifte;
+import dev.nifte.feature.glow.EntityGlowFeature;
 import dev.nifte.hud.PlayerTracers;
 
 public final class NifteConfig {
@@ -109,7 +110,9 @@ public final class NifteConfig {
 
 	public boolean hideDeadMobs = false;
 	public boolean highlightHostileMobs = false;
+	public int highlightHostileMobsRange = EntityGlowFeature.RANGE_DEFAULT;
 	public boolean highlightOtherPlayers = false;
+	public int highlightOtherPlayersRange = EntityGlowFeature.RANGE_DEFAULT;
 	public boolean playerTracersEnabled = false;
 	public int playerTracersRange = PlayerTracers.RANGE_DEFAULT;
 	public boolean ignoreGrassInCombat = false;
@@ -117,6 +120,7 @@ public final class NifteConfig {
 	public boolean quickUseEnabled = true;
 	public boolean projectileTrajectoryEnabled = true;
 
+	public boolean hideFirstPersonEffectParticles = false;
 	public List<String> disabledParticles = new ArrayList<>();
 
 	public String lastConfigCategory = "nifte.config.hud";
@@ -157,6 +161,8 @@ public final class NifteConfig {
 				}
 
 				loaded.mobHealthReach = Mth.clamp(loaded.mobHealthReach, 1, 20);
+				loaded.highlightHostileMobsRange = Mth.clamp(loaded.highlightHostileMobsRange, EntityGlowFeature.RANGE_MIN, EntityGlowFeature.RANGE_MAX);
+				loaded.highlightOtherPlayersRange = Mth.clamp(loaded.highlightOtherPlayersRange, EntityGlowFeature.RANGE_MIN, EntityGlowFeature.RANGE_MAX);
 				loaded.playerTracersRange = Mth.clamp(loaded.playerTracersRange, PlayerTracers.RANGE_MIN, PlayerTracers.RANGE_MAX);
 
 				if (loaded.dropConfirmMode == null) {

@@ -1,6 +1,8 @@
 package dev.nifte.feature.glow;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
@@ -9,6 +11,10 @@ import dev.nifte.config.NifteConfig;
 import dev.nifte.hud.ToggleOverlay;
 
 public final class EntityGlowFeature {
+	public static final int RANGE_MIN = 1;
+	public static final int RANGE_MAX = 256;
+	public static final int RANGE_DEFAULT = 64;
+
 	private EntityGlowFeature() {
 	}
 
@@ -33,14 +39,24 @@ public final class EntityGlowFeature {
 			return false;
 		}
 
+		LocalPlayer self = Minecraft.getInstance().player;
+		if (self == null) {
+			return false;
+		}
+
 		NifteConfig config = NifteConfig.get();
-		if (config.highlightHostileMobs && entity instanceof Enemy) {
+		if (config.highlightHostileMobs && entity instanceof Enemy && inRange(self, entity, config.highlightHostileMobsRange)) {
 			return true;
 		}
 
 		return config.highlightOtherPlayers
 			&& entity instanceof Player player
 			&& !(player instanceof LocalPlayer)
-			&& !player.isSpectator();
+			&& !player.isSpectator()
+			&& inRange(self, entity, config.highlightOtherPlayersRange);
+	}
+
+	private static boolean inRange(LocalPlayer self, Entity entity, int range) {
+		return self.distanceToSqr(entity) <= Mth.square(range);
 	}
 }
