@@ -2,9 +2,10 @@ package dev.nifte.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.client.renderer.FirstPersonHandsAndItemsRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.state.level.FirstPersonHandsAndItemsRenderState;
+import net.minecraft.client.renderer.state.level.PlayerRenderState;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 
@@ -16,11 +17,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import dev.nifte.feature.overlay.HideHeldTotemFeature;
 import dev.nifte.feature.overlay.ShieldOverlayFeature;
 
-@Mixin(ItemInHandRenderer.class)
-public abstract class ItemInHandRendererMixin {
+@Mixin(FirstPersonHandsAndItemsRenderer.class)
+public abstract class FirstPersonHandsAndItemsRendererMixin {
 	@Inject(method = "submitArmWithItem", at = @At("HEAD"), cancellable = true)
 	private void nifte$hideHeldTotem(
-		AbstractClientPlayer player,
+		PlayerRenderState playerState,
+		FirstPersonHandsAndItemsRenderState hands,
 		float frameInterp,
 		float xRot,
 		InteractionHand hand,
@@ -42,7 +44,8 @@ public abstract class ItemInHandRendererMixin {
 		at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", shift = At.Shift.AFTER)
 	)
 	private void nifte$lowerShield(
-		AbstractClientPlayer player,
+		PlayerRenderState playerState,
+		FirstPersonHandsAndItemsRenderState hands,
 		float frameInterp,
 		float xRot,
 		InteractionHand hand,

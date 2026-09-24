@@ -14,7 +14,15 @@ import dev.nifte.feature.mobs.HideDeadMobs;
 @Mixin(EntityRenderDispatcher.class)
 public abstract class EntityRenderDispatcherMixin {
 	@Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)
-	private void nifte$hideDeadMobs(Entity entity, Frustum culler, double camX, double camY, double camZ, CallbackInfoReturnable<Boolean> cir) {
+	private void nifte$hideDeadMobs(
+		Entity entity,
+		Frustum culler,
+		double camX,
+		double camY,
+		double camZ,
+		float partialTick,
+		CallbackInfoReturnable<Boolean> cir
+	) {
 		if (HideDeadMobs.shouldHide(entity)) {
 			cir.setReturnValue(false);
 		}

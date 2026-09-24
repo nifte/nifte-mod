@@ -1,0 +1,12 @@
+{
+  "name": "nifte-mod",
+  "private": true,
+  "scripts": {
+    "build": "gradlew build",
+    "test": "gradlew test",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3"
+  }
+}

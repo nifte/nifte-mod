@@ -24,12 +24,10 @@ import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
-import dev.nifte.feature.glow.EntityGlowFeature;
 import dev.nifte.feature.overlay.FireOverlayFeature;
 import dev.nifte.feature.overlay.ShieldOverlayFeature;
 import dev.nifte.feature.particles.ParticleGroups;
 import dev.nifte.feature.particles.ParticleTooltips;
-import dev.nifte.hud.PlayerTracers;
 import dev.nifte.input.NifteKeybinds;
 
 public final class NifteConfigScreen {
@@ -384,78 +382,6 @@ public final class NifteConfigScreen {
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.hideDeadMobs = value)
 			.build());
-		addEntry(category, keybindToggle(
-			entries,
-			"nifte.config.highlight_hostile_mobs",
-			config.highlightHostileMobs,
-			false,
-			NifteKeybinds.highlightHostileMobs,
-			value -> config.highlightHostileMobs = value
-		));
-		addSettings(
-			category,
-			entries,
-			"nifte.config.highlight_hostile_mobs",
-			entries.startIntSlider(
-				Component.translatable("nifte.config.highlight_hostile_mobs.range"),
-				config.highlightHostileMobsRange,
-				EntityGlowFeature.RANGE_MIN,
-				EntityGlowFeature.RANGE_MAX
-			)
-				.setDefaultValue(EntityGlowFeature.RANGE_DEFAULT)
-				.setTextGetter(NifteConfigScreen::highlightHostileMobsRangeLabel)
-				.setTooltip(tooltip("nifte.config.highlight_hostile_mobs.range"))
-				.setSaveConsumer(value -> config.highlightHostileMobsRange = value)
-				.build()
-		);
-		addEntry(category, keybindToggle(
-			entries,
-			"nifte.config.highlight_other_players",
-			config.highlightOtherPlayers,
-			false,
-			NifteKeybinds.highlightOtherPlayers,
-			value -> config.highlightOtherPlayers = value
-		));
-		addSettings(
-			category,
-			entries,
-			"nifte.config.highlight_other_players",
-			entries.startIntSlider(
-				Component.translatable("nifte.config.highlight_other_players.range"),
-				config.highlightOtherPlayersRange,
-				EntityGlowFeature.RANGE_MIN,
-				EntityGlowFeature.RANGE_MAX
-			)
-				.setDefaultValue(EntityGlowFeature.RANGE_DEFAULT)
-				.setTextGetter(NifteConfigScreen::highlightOtherPlayersRangeLabel)
-				.setTooltip(tooltip("nifte.config.highlight_other_players.range"))
-				.setSaveConsumer(value -> config.highlightOtherPlayersRange = value)
-				.build()
-		);
-		addEntry(category, keybindToggle(
-			entries,
-			"nifte.config.player_tracers",
-			config.playerTracersEnabled,
-			false,
-			NifteKeybinds.playerTracers,
-			value -> config.playerTracersEnabled = value
-		));
-		addSettings(
-			category,
-			entries,
-			"nifte.config.player_tracers",
-			entries.startIntSlider(
-				Component.translatable("nifte.config.player_tracers.range"),
-				config.playerTracersRange,
-				PlayerTracers.RANGE_MIN,
-				PlayerTracers.RANGE_MAX
-			)
-				.setDefaultValue(PlayerTracers.RANGE_DEFAULT)
-				.setTextGetter(NifteConfigScreen::playerTracersRangeLabel)
-				.setTooltip(tooltip("nifte.config.player_tracers.range"))
-				.setSaveConsumer(value -> config.playerTracersRange = value)
-				.build()
-		);
 		addEntry(category, booleanToggle(entries, "nifte.config.trajectory", config.projectileTrajectoryEnabled)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.projectileTrajectoryEnabled = value)
@@ -681,27 +607,6 @@ public final class NifteConfigScreen {
 		String key = blocks == 1
 			? "nifte.config.mob_health.reach.value.singular"
 			: "nifte.config.mob_health.reach.value";
-		return Component.translatable(key, blocks);
-	}
-
-	private static Component playerTracersRangeLabel(int blocks) {
-		String key = blocks == 1
-			? "nifte.config.player_tracers.range.value.singular"
-			: "nifte.config.player_tracers.range.value";
-		return Component.translatable(key, blocks);
-	}
-
-	private static Component highlightHostileMobsRangeLabel(int blocks) {
-		String key = blocks == 1
-			? "nifte.config.highlight_hostile_mobs.range.value.singular"
-			: "nifte.config.highlight_hostile_mobs.range.value";
-		return Component.translatable(key, blocks);
-	}
-
-	private static Component highlightOtherPlayersRangeLabel(int blocks) {
-		String key = blocks == 1
-			? "nifte.config.highlight_other_players.range.value.singular"
-			: "nifte.config.highlight_other_players.range.value";
 		return Component.translatable(key, blocks);
 	}
 

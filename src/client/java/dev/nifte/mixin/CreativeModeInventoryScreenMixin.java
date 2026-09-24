@@ -15,7 +15,11 @@ import dev.nifte.feature.dropconfirm.DropConfirmFeature;
 
 @Mixin(CreativeModeInventoryScreen.class)
 public abstract class CreativeModeInventoryScreenMixin {
-	@Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)
+	@Inject(
+		method = "slotClicked(Lnet/minecraft/world/inventory/Slot;IILnet/minecraft/world/inventory/ContainerInput;)V",
+		at = @At("HEAD"),
+		cancellable = true
+	)
 	private void nifte$dropConfirm(@Nullable Slot slot, int slotId, int buttonNum, ContainerInput input, CallbackInfo ci) {
 		CreativeModeInventoryScreen screen = (CreativeModeInventoryScreen) (Object) this;
 		if (DropConfirmFeature.handleSlotClick(screen.getMenu(), slot, slotId, input)) {

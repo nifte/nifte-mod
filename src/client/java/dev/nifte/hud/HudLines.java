@@ -13,10 +13,6 @@ final class HudLines {
 	private HudLines() {
 	}
 
-	static void segment(Minecraft minecraft, Camera camera, Vec3 start, Vec3 end, int color, float pixelWidth, boolean alwaysOnTop) {
-		polyline(minecraft, camera, List.of(start, end), color, pixelWidth, alwaysOnTop);
-	}
-
 	static void polyline(Minecraft minecraft, Camera camera, List<Vec3> points, int color, float pixelWidth, boolean alwaysOnTop) {
 		HudLineGeometry.Rails rails = HudLineGeometry.rails(
 			camera,

@@ -7,17 +7,13 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 
-import org.lwjgl.glfw.GLFW;
-
 import dev.nifte.Nifte;
 import dev.nifte.config.NifteConfigScreen;
 import dev.nifte.feature.autotool.AutoToolFeature;
 import dev.nifte.feature.autoweapon.AutoWeaponFeature;
 import dev.nifte.feature.food.QuickEatFeature;
 import dev.nifte.feature.fullbright.FullbrightFeature;
-import dev.nifte.feature.glow.EntityGlowFeature;
 import dev.nifte.feature.zoom.ZoomFeature;
-import dev.nifte.hud.PlayerTracers;
 
 public final class NifteKeybinds {
 	public static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(Nifte.id("nifte"));
@@ -26,9 +22,6 @@ public final class NifteKeybinds {
 	public static KeyMapping fullbright;
 	public static KeyMapping autoTool;
 	public static KeyMapping autoWeapon;
-	public static KeyMapping highlightHostileMobs;
-	public static KeyMapping highlightOtherPlayers;
-	public static KeyMapping playerTracers;
 	public static KeyMapping zoom;
 	public static KeyMapping quickEat;
 	public static KeyMapping sortContainer;
@@ -44,69 +37,51 @@ public final class NifteKeybinds {
 	public static void register() {
 		openConfig = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.open_config",
-			InputConstants.Type.KEYSYM,
-			GLFW.GLFW_KEY_N,
+			InputConstants.Type.KEYBOARD,
+			InputConstants.KEY_N,
 			CATEGORY
 		));
 		fullbright = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.fullbright",
-			InputConstants.Type.KEYSYM,
-			GLFW.GLFW_KEY_UNKNOWN,
+			InputConstants.Type.KEYBOARD,
+			InputConstants.UNKNOWN.getValue(),
 			CATEGORY
 		));
 		autoTool = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.auto_tool",
-			InputConstants.Type.KEYSYM,
-			GLFW.GLFW_KEY_UNKNOWN,
+			InputConstants.Type.KEYBOARD,
+			InputConstants.UNKNOWN.getValue(),
 			CATEGORY
 		));
 		autoWeapon = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.auto_weapon",
-			InputConstants.Type.KEYSYM,
-			GLFW.GLFW_KEY_UNKNOWN,
-			CATEGORY
-		));
-		highlightHostileMobs = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-			"key.nifte.highlight_hostile_mobs",
-			InputConstants.Type.KEYSYM,
-			GLFW.GLFW_KEY_UNKNOWN,
-			CATEGORY
-		));
-		highlightOtherPlayers = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-			"key.nifte.highlight_other_players",
-			InputConstants.Type.KEYSYM,
-			GLFW.GLFW_KEY_UNKNOWN,
-			CATEGORY
-		));
-		playerTracers = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-			"key.nifte.player_tracers",
-			InputConstants.Type.KEYSYM,
-			GLFW.GLFW_KEY_UNKNOWN,
+			InputConstants.Type.KEYBOARD,
+			InputConstants.UNKNOWN.getValue(),
 			CATEGORY
 		));
 		zoom = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.zoom",
-			InputConstants.Type.KEYSYM,
-			GLFW.GLFW_KEY_Z,
+			InputConstants.Type.KEYBOARD,
+			InputConstants.KEY_Z,
 			CATEGORY
 		));
 		quickEat = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.quick_eat",
-			InputConstants.Type.KEYSYM,
-			GLFW.GLFW_KEY_UNKNOWN,
+			InputConstants.Type.KEYBOARD,
+			InputConstants.UNKNOWN.getValue(),
 			CATEGORY
 		));
 		sortContainer = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.sort",
 			InputConstants.Type.MOUSE,
-			GLFW.GLFW_MOUSE_BUTTON_MIDDLE,
+			InputConstants.MOUSE_BUTTON_MIDDLE,
 			CATEGORY
 		));
 		for (int slot = 0; slot < quickUseSlots.length; slot++) {
 			quickUseSlots[slot] = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 				"key.nifte.quick_use." + (slot + 1),
-				InputConstants.Type.KEYSYM,
-				GLFW.GLFW_KEY_UNKNOWN,
+				InputConstants.Type.KEYBOARD,
+				InputConstants.UNKNOWN.getValue(),
 				CATEGORY
 			));
 		}
@@ -129,18 +104,6 @@ public final class NifteKeybinds {
 
 		while (autoWeapon.consumeClick()) {
 			AutoWeaponFeature.toggle();
-		}
-
-		while (highlightHostileMobs.consumeClick()) {
-			EntityGlowFeature.toggleHostileMobs();
-		}
-
-		while (highlightOtherPlayers.consumeClick()) {
-			EntityGlowFeature.toggleOtherPlayers();
-		}
-
-		while (playerTracers.consumeClick()) {
-			PlayerTracers.toggle();
 		}
 
 		ZoomFeature.tick();

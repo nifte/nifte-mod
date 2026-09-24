@@ -25,7 +25,7 @@
     "GameRendererMixin",
     "GuiGraphicsExtractorMixin",
     "HudMixin",
-    "ItemInHandRendererMixin",
+    "FirstPersonHandsAndItemsRendererMixin",
     "ItemStackMixin",
     "KeyboardInputMixin",
     "KeyBindsListKeyEntryMixin",

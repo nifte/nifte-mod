@@ -1,7 +1,6 @@
 package dev.nifte.feature.guimove;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.platform.Window;
 
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
@@ -54,15 +53,14 @@ public final class GuiMoveFeature {
 	}
 
 	public static Input readKeyPresses(Options options) {
-		Window window = Minecraft.getInstance().getWindow();
 		return new Input(
-			isDown(window, options.keyUp),
-			isDown(window, options.keyDown),
-			isDown(window, options.keyLeft),
-			isDown(window, options.keyRight),
-			isDown(window, options.keyJump),
-			isDown(window, options.keyShift),
-			isDown(window, options.keySprint)
+			isDown(options.keyUp),
+			isDown(options.keyDown),
+			isDown(options.keyLeft),
+			isDown(options.keyRight),
+			isDown(options.keyJump),
+			isDown(options.keyShift),
+			isDown(options.keySprint)
 		);
 	}
 
@@ -72,9 +70,9 @@ public final class GuiMoveFeature {
 		return new Vec2(left, forward).normalized();
 	}
 
-	private static boolean isDown(Window window, KeyMapping mapping) {
+	private static boolean isDown(KeyMapping mapping) {
 		InputConstants.Key key = KeyMappingHelper.getBoundKeyOf(mapping);
-		return key.getType() == InputConstants.Type.KEYSYM && InputConstants.isKeyDown(window, key.getValue());
+		return key.getType() == InputConstants.Type.KEYBOARD && InputConstants.isKeyDown(key.getValue());
 	}
 
 	private static float impulse(boolean positive, boolean negative) {

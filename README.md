@@ -1,13 +1,13 @@
 # Nifte Mod
 
-A client side quality of life mod for Minecraft **26.2** (Fabric). Every feature can be turned on/off from the in game settings screen (`N` by default, or through Mod Menu).
+A client side quality of life mod for Minecraft **26.3** (Fabric). Every feature can be turned on/off from the in game settings screen (`N` by default, or through Mod Menu).
 
 This mod is **client only**. It does not need to be installed on servers.
 
 ## Requirements
 
-- Minecraft 26.2
-- Fabric Loader 0.19.3+
+- Minecraft 26.3
+- Fabric Loader 0.19.5+
 - [Fabric API](https://modrinth.com/mod/fabric-api)
 - [Cloth Config](https://modrinth.com/mod/cloth-config)
 - [Mod Menu](https://modrinth.com/mod/modmenu) (recommended, for the config button)
@@ -57,9 +57,6 @@ This mod is **client only**. It does not need to be installed on servers.
 ### Combat
 
 - Hide death animations
-- Highlight hostile mobs
-- Highlight other players
-- Player tracers
 - Projectile trajectory previews
 - Attack through foliage without breaking it
 - Keep sprinting when you bump into a wall

@@ -70,7 +70,11 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 		}
 	}
 
-	@Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)
+	@Inject(
+		method = "slotClicked(Lnet/minecraft/world/inventory/Slot;IILnet/minecraft/world/inventory/ContainerInput;)V",
+		at = @At("HEAD"),
+		cancellable = true
+	)
 	private void nifte$dropConfirm(Slot slot, int slotId, int buttonNum, ContainerInput input, CallbackInfo ci) {
 		AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) (Object) this;
 		if (DropConfirmFeature.handleSlotClick(screen.getMenu(), slot, slotId, input)) {

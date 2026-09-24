@@ -10,6 +10,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.PiercingWeapon;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 
@@ -25,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import dev.nifte.feature.autotool.AutoToolFeature;
 import dev.nifte.feature.breakdelay.NoBreakDelay;
 import dev.nifte.feature.bridge.BedrockBridging;
+import dev.nifte.feature.dropconfirm.DropConfirmFeature;
 import dev.nifte.feature.fastplace.FastBlockPlacement;
 import dev.nifte.feature.food.QuickEatFeature;
 import dev.nifte.feature.restock.HandRestockFeature;
@@ -125,7 +127,7 @@ public abstract class MultiPlayerGameModeMixin {
 	}
 
 	@Inject(method = "piercingAttack", at = @At("HEAD"), cancellable = true)
-	private void nifte$protectPiercingAttack(PiercingWeapon weapon, CallbackInfo ci) {
+	private void nifte$protectPiercingAttack(SwingAnimation animation, PiercingWeapon weapon, CallbackInfo ci) {
 		if (ToolProtectFeature.blockMainHand(this.minecraft)) {
 			ci.cancel();
 		}
@@ -156,6 +158,13 @@ public abstract class MultiPlayerGameModeMixin {
 	private void nifte$protectInteract(Player player, Entity entity, EntityHitResult hitResult, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
 		if (player instanceof LocalPlayer localPlayer && ToolProtectFeature.blockEntityInteract(localPlayer, entity, hand)) {
 			cir.setReturnValue(InteractionResult.PASS);
+		}
+	}
+
+	@Inject(method = "dropItem", at = @At("HEAD"), cancellable = true)
+	private void nifte$dropConfirm(LocalPlayer player, boolean dropAll, CallbackInfo ci) {
+		if (DropConfirmFeature.shouldBlockDrop(player.getInventory().getSelectedItem())) {
+			ci.cancel();
 		}
 	}
 }
