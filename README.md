@@ -1,12 +1,12 @@
 # Nifte Mod
 
-A client side quality of life mod for Minecraft **26.3** (Fabric). Every feature can be turned on/off from the in game settings screen (`N` by default, or through Mod Menu).
+A client side quality of life mod for Minecraft **26.2** and **26.3** (Fabric). Every feature can be turned on/off from the in game settings screen (`N` by default, or through Mod Menu). Each Minecraft version has its own jar. The versions that get built are listed in `supported-versions.txt`.
 
 This mod is **client only**. It does not need to be installed on servers.
 
 ## Requirements
 
-- Minecraft 26.3
+- Minecraft 26.2 or 26.3, using the jar built for that version
 - Fabric Loader 0.19.5+
 - [Fabric API](https://modrinth.com/mod/fabric-api)
 - [Cloth Config](https://modrinth.com/mod/cloth-config)

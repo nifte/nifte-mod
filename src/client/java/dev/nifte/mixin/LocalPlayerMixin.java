@@ -3,7 +3,6 @@ package dev.nifte.mixin;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.HitResult;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import dev.nifte.feature.autototem.AutoTotemFeature;
+import dev.nifte.feature.dropconfirm.DropConfirmFeature;
 import dev.nifte.feature.camera.DynamicThirdPerson;
 import dev.nifte.feature.combat.IgnoreGrassFeature;
 import dev.nifte.feature.sprint.KeepSprintFeature;
@@ -33,10 +33,16 @@ public abstract class LocalPlayerMixin {
 		cir.setReturnValue(!this.nifte$isSprintingPossible(player.getAbilities().flying) || !player.input.hasForwardImpulse());
 	}
 
-	@Inject(method = "displayItemActivation", at = @At("TAIL"))
+	@Inject(method = "displayItemActivation", at = @At("TAIL"), require = 0)
 	private void nifte$autoTotem(ItemStack itemStack, CallbackInfo ci) {
-		if (itemStack.is(Items.TOTEM_OF_UNDYING)) {
-			AutoTotemFeature.onTotemPopped();
+		AutoTotemFeature.onItemActivation(itemStack);
+	}
+
+	@Inject(method = "drop(Z)Z", at = @At("HEAD"), cancellable = true, require = 0)
+	private void nifte$dropConfirm(boolean dropAll, CallbackInfoReturnable<Boolean> cir) {
+		LocalPlayer player = (LocalPlayer) (Object) this;
+		if (DropConfirmFeature.shouldBlockDrop(player.getInventory().getSelectedItem())) {
+			cir.setReturnValue(false);
 		}
 	}
 

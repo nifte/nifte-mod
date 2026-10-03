@@ -1,6 +1,7 @@
 {
   "required": true,
   "package": "dev.nifte.mixin",
+  "plugin": "dev.nifte.mixin.NifteMixinPlugin",
   "compatibilityLevel": "JAVA_25",
   "client": [
     "AbstractConfigEntryMixin",
@@ -25,7 +26,6 @@
     "GameRendererMixin",
     "GuiGraphicsExtractorMixin",
     "HudMixin",
-    "FirstPersonHandsAndItemsRendererMixin",
     "ItemStackMixin",
     "KeyboardInputMixin",
     "KeyBindsListKeyEntryMixin",

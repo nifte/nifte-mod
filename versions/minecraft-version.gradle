@@ -1,0 +1,88 @@
+plugins {
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+}
+
+def mcVersion = projectDir.name
+def spec = gradle.supportedMinecraftVersions.find { it.minecraft == mcVersion }
+if (spec == null) {
+	throw new GradleException("No supported-versions.txt entry for Minecraft ${mcVersion}")
+}
+
+version = rootProject.version
+group = rootProject.group
+
+base {
+	archivesName = 'nifte'
+}
+
+repositories {
+	maven {
+		name = 'Shedaniel'
+		url = 'https://maven.shedaniel.me/'
+	}
+	maven {
+		name = 'Terraformers'
+		url = 'https://maven.terraformersmc.com/releases/'
+	}
+}
+
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		nifte {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+}
+
+sourceSets.named("main") {
+	java.setSrcDirs(["${rootDir}/src/main/java"])
+	resources.setSrcDirs(["${rootDir}/src/main/resources"])
+}
+
+sourceSets.named("client") {
+	java.setSrcDirs(["${rootDir}/src/client/java", "${rootDir}/src/${mcVersion}/java"])
+	resources.setSrcDirs(["${rootDir}/src/client/resources"])
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${spec.minecraft}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${spec.fabricApi}"
+
+	implementation("me.shedaniel.cloth:cloth-config-fabric:${spec.clothConfig}") {
+		exclude group: 'net.fabricmc.fabric-api'
+	}
+
+	implementation "com.terraformersmc:modmenu:${spec.modMenu}"
+}
+
+processResources {
+	def version = project.version
+	def minecraft_version = spec.minecraft
+	inputs.property "version", version
+	inputs.property "minecraft_version", minecraft_version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": version, "minecraft_version": minecraft_version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+}
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
+
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}
+
+jar {
+	archiveFileName = "nifte-${project.version}+${spec.minecraft}.jar"
+}

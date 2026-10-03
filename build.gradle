@@ -11,6 +11,12 @@ base {
 	archivesName = 'nifte'
 }
 
+def supportedMinecraftVersions = gradle.supportedMinecraftVersions
+def devMinecraftVersion = supportedMinecraftVersions.find { it.minecraft == project.minecraft_version }
+if (devMinecraftVersion == null) {
+	throw new GradleException("minecraft_version=${project.minecraft_version} is not listed in supported-versions.txt")
+}
+
 repositories {
 	maven {
 		name = 'Shedaniel'
@@ -37,24 +43,30 @@ loom {
 	}
 }
 
+sourceSets.named("client") {
+	java.srcDir("src/${project.minecraft_version}/java")
+}
+
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${devMinecraftVersion.fabricApi}"
 
-	implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+	implementation("me.shedaniel.cloth:cloth-config-fabric:${devMinecraftVersion.clothConfig}") {
 		exclude group: 'net.fabricmc.fabric-api'
 	}
 
-	implementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+	implementation "com.terraformersmc:modmenu:${devMinecraftVersion.modMenu}"
 }
 
 processResources {
 	def version = project.version
+	def minecraft_version = project.minecraft_version
 	inputs.property "version", version
+	inputs.property "minecraft_version", minecraft_version
 
 	filesMatching("fabric.mod.json") {
-		expand "version": version
+		expand "version": version, "minecraft_version": minecraft_version
 	}
 }
 
@@ -73,6 +85,8 @@ java {
 }
 
 jar {
+	archiveFileName = "nifte-${project.version}+${project.minecraft_version}.jar"
+
 	def projectName = project.name
 	inputs.property "projectName", projectName
 
@@ -93,6 +107,28 @@ publishing {
 }
 
 def jarTask = tasks.named("jar", Jar)
+
+def otherMinecraftVersions = supportedMinecraftVersions.findAll { it.minecraft != project.minecraft_version }
+
+tasks.register("copySupportedVersionJars", Copy) {
+	group = "build"
+	description = "Builds a jar for every other version in supported-versions.txt and copies it into build/libs."
+	into(layout.buildDirectory.dir("libs"))
+
+	otherMinecraftVersions.each { version ->
+		def versionProject = project(":mc${version.minecraft.replace('.', '_')}")
+		dependsOn(versionProject.tasks.named("jar"))
+		from(versionProject.tasks.named("jar", Jar).flatMap { it.archiveFile })
+	}
+}
+
+tasks.named("assemble") {
+	dependsOn("copySupportedVersionJars")
+}
+
+tasks.named("jar") {
+	finalizedBy("copySupportedVersionJars")
+}
 
 def copyJarToModrinthProfile() {
 	def destDir = file(project.modrinth_dev_mods)

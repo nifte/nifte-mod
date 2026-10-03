@@ -1,7 +1,5 @@
 package dev.nifte.feature.guimove;
 
-import com.mojang.blaze3d.platform.InputConstants;
-
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -19,6 +17,7 @@ import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.phys.Vec2;
 
 import dev.nifte.config.NifteConfig;
+import dev.nifte.input.KeyboardKeys;
 
 public final class GuiMoveFeature {
 	private GuiMoveFeature() {
@@ -71,8 +70,7 @@ public final class GuiMoveFeature {
 	}
 
 	private static boolean isDown(KeyMapping mapping) {
-		InputConstants.Key key = KeyMappingHelper.getBoundKeyOf(mapping);
-		return key.getType() == InputConstants.Type.KEYBOARD && InputConstants.isKeyDown(key.getValue());
+		return KeyboardKeys.isDown(KeyMappingHelper.getBoundKeyOf(mapping));
 	}
 
 	private static float impulse(boolean positive, boolean negative) {

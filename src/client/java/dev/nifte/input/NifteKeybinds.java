@@ -37,37 +37,37 @@ public final class NifteKeybinds {
 	public static void register() {
 		openConfig = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.open_config",
-			InputConstants.Type.KEYBOARD,
+			KeyboardKeys.KEYBOARD,
 			InputConstants.KEY_N,
 			CATEGORY
 		));
 		fullbright = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.fullbright",
-			InputConstants.Type.KEYBOARD,
+			KeyboardKeys.KEYBOARD,
 			InputConstants.UNKNOWN.getValue(),
 			CATEGORY
 		));
 		autoTool = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.auto_tool",
-			InputConstants.Type.KEYBOARD,
+			KeyboardKeys.KEYBOARD,
 			InputConstants.UNKNOWN.getValue(),
 			CATEGORY
 		));
 		autoWeapon = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.auto_weapon",
-			InputConstants.Type.KEYBOARD,
+			KeyboardKeys.KEYBOARD,
 			InputConstants.UNKNOWN.getValue(),
 			CATEGORY
 		));
 		zoom = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.zoom",
-			InputConstants.Type.KEYBOARD,
+			KeyboardKeys.KEYBOARD,
 			InputConstants.KEY_Z,
 			CATEGORY
 		));
 		quickEat = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.nifte.quick_eat",
-			InputConstants.Type.KEYBOARD,
+			KeyboardKeys.KEYBOARD,
 			InputConstants.UNKNOWN.getValue(),
 			CATEGORY
 		));
@@ -80,7 +80,7 @@ public final class NifteKeybinds {
 		for (int slot = 0; slot < quickUseSlots.length; slot++) {
 			quickUseSlots[slot] = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 				"key.nifte.quick_use." + (slot + 1),
-				InputConstants.Type.KEYBOARD,
+				KeyboardKeys.KEYBOARD,
 				InputConstants.UNKNOWN.getValue(),
 				CATEGORY
 			));

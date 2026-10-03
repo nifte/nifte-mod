@@ -126,8 +126,27 @@ public abstract class MultiPlayerGameModeMixin {
 		}
 	}
 
-	@Inject(method = "piercingAttack", at = @At("HEAD"), cancellable = true)
+	@Inject(
+		method = "piercingAttack(Lnet/minecraft/world/item/component/SwingAnimation;Lnet/minecraft/world/item/component/PiercingWeapon;)V",
+		at = @At("HEAD"),
+		cancellable = true,
+		require = 0
+	)
 	private void nifte$protectPiercingAttack(SwingAnimation animation, PiercingWeapon weapon, CallbackInfo ci) {
+		nifte$cancelPiercingAttack(ci);
+	}
+
+	@Inject(
+		method = "piercingAttack(Lnet/minecraft/world/item/component/PiercingWeapon;)V",
+		at = @At("HEAD"),
+		cancellable = true,
+		require = 0
+	)
+	private void nifte$protectPiercingAttackLegacy(PiercingWeapon weapon, CallbackInfo ci) {
+		nifte$cancelPiercingAttack(ci);
+	}
+
+	private void nifte$cancelPiercingAttack(CallbackInfo ci) {
 		if (ToolProtectFeature.blockMainHand(this.minecraft)) {
 			ci.cancel();
 		}
@@ -161,7 +180,7 @@ public abstract class MultiPlayerGameModeMixin {
 		}
 	}
 
-	@Inject(method = "dropItem", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "dropItem", at = @At("HEAD"), cancellable = true, require = 0)
 	private void nifte$dropConfirm(LocalPlayer player, boolean dropAll, CallbackInfo ci) {
 		if (DropConfirmFeature.shouldBlockDrop(player.getInventory().getSelectedItem())) {
 			ci.cancel();

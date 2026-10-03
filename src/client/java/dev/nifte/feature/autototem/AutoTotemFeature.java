@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import dev.nifte.config.NifteConfig;
@@ -17,6 +18,12 @@ public final class AutoTotemFeature {
 
 	public static void register() {
 		ClientTickEvents.END_CLIENT_TICK.register(AutoTotemFeature::tick);
+	}
+
+	public static void onItemActivation(ItemStack stack) {
+		if (stack.is(Items.TOTEM_OF_UNDYING)) {
+			onTotemPopped();
+		}
 	}
 
 	public static void onTotemPopped() {

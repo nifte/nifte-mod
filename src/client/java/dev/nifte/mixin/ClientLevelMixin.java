@@ -22,8 +22,15 @@ public abstract class ClientLevelMixin {
 		}
 	}
 
-	@Inject(method = "addBreakingBlockEffects", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "addBreakingBlockEffects", at = @At("HEAD"), cancellable = true, require = 0)
 	private void nifte$filterBreakingParticles(BlockPos pos, Direction direction, boolean playSound, CallbackInfo ci) {
+		if (ParticleFilter.isDisabled(ParticleTypes.BLOCK)) {
+			ci.cancel();
+		}
+	}
+
+	@Inject(method = "addBreakingBlockEffect", at = @At("HEAD"), cancellable = true, require = 0)
+	private void nifte$filterBreakingParticlesLegacy(BlockPos pos, Direction direction, CallbackInfo ci) {
 		if (ParticleFilter.isDisabled(ParticleTypes.BLOCK)) {
 			ci.cancel();
 		}
