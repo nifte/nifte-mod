@@ -6,11 +6,18 @@ import dev.nifte.config.NifteConfig;
 import dev.nifte.config.ZoomTransition;
 import dev.nifte.input.NifteKeybinds;
 
+/**
+ * Only takes control of the camera FOV and the look sensitivity while the zoom key is held, or while the smooth
+ * transition back to the vanilla FOV is still running. Outside of that window the animation state is cleared so that
+ * vanilla's own FOV changes (sprinting, flying, speed effects, bows, water) never alter the look sensitivity.
+ */
 public final class ZoomFeature {
 	private static final float SMOOTH_FACTOR = 0.5F;
 	private static final float SETTLE_EPSILON = 0.05F;
+	private static final float MIN_FOV = 10.0F;
+	private static final float MAX_FOV = 70.0F;
+	private static final float SCROLL_STEP = 5.0F;
 
-	private static boolean wasZooming;
 	private static float sessionFov = 30.0F;
 	private static float lastVanillaFov = Float.NaN;
 	private static float oldAnimatedFov = Float.NaN;
@@ -21,42 +28,47 @@ public final class ZoomFeature {
 
 	public static void tick() {
 		NifteConfig config = NifteConfig.get();
-		if (!config.zoomEnabled || !NifteKeybinds.isBound(NifteKeybinds.zoom)) {
-			wasZooming = false;
+		boolean zooming = isZooming();
+		if (!zooming) {
 			sessionFov = config.zoomFov;
-			resetAnimation();
+		}
+
+		if (!isAvailable(config) || !transition().isSmooth()) {
+			clearAnimation();
 			return;
 		}
 
-		boolean zooming = isZooming();
-		if (zooming && !wasZooming) {
-			sessionFov = config.zoomFov;
-		} else if (!zooming) {
-			sessionFov = config.zoomFov;
+		if (zooming) {
+			seedAnimationIfNeeded();
+			advanceAnimation(sessionFov);
+			return;
 		}
 
-		wasZooming = zooming;
-		advanceAnimation(zooming ? sessionFov : lastVanillaFov, transition());
+		if (!isAnimating()) {
+			return;
+		}
+
+		advanceAnimation(lastVanillaFov);
+		if (settled(lastVanillaFov)) {
+			clearAnimation();
+		}
 	}
 
 	public static boolean isZooming() {
-		return NifteConfig.get().zoomEnabled
-			&& NifteKeybinds.isBound(NifteKeybinds.zoom)
-			&& NifteKeybinds.zoom.isDown();
+		return isAvailable(NifteConfig.get()) && NifteKeybinds.zoom.isDown();
 	}
 
 	public static float modifyFov(float fov, float partialTicks) {
 		lastVanillaFov = fov;
-		if (Float.isNaN(animatedFov)) {
-			oldAnimatedFov = fov;
-			animatedFov = fov;
-		}
-
 		if (!transition().isSmooth()) {
 			return isZooming() ? sessionFov : fov;
 		}
 
-		if (!isZooming() && settled(fov)) {
+		if (isZooming()) {
+			seedAnimationIfNeeded();
+		}
+
+		if (!isAnimating()) {
 			return fov;
 		}
 
@@ -68,36 +80,28 @@ public final class ZoomFeature {
 			return false;
 		}
 
-		sessionFov = Mth.clamp(sessionFov - (float) Math.signum(scrollY) * 5.0F, 10.0F, 70.0F);
+		sessionFov = Mth.clamp(sessionFov - (float) Math.signum(scrollY) * SCROLL_STEP, MIN_FOV, MAX_FOV);
 		return true;
 	}
 
 	public static double sensitivityMultiplier() {
-		if (!isAffectingLook()) {
+		if (!hasVanillaFov()) {
 			return 1.0;
 		}
 
-		float fov = displayedFov();
-		return (Float.isNaN(fov) ? sessionFov : fov) / 70.0;
-	}
-
-	private static boolean isAffectingLook() {
-		if (isZooming()) {
-			return true;
-		}
-
-		return transition().isSmooth()
-			&& Float.isFinite(animatedFov)
-			&& Float.isFinite(lastVanillaFov)
-			&& !settled(lastVanillaFov);
-	}
-
-	private static float displayedFov() {
 		if (!transition().isSmooth()) {
-			return sessionFov;
+			return isZooming() ? sessionFov / lastVanillaFov : 1.0;
 		}
 
-		return animatedFov;
+		if (!isAnimating()) {
+			return 1.0;
+		}
+
+		return animatedFov / lastVanillaFov;
+	}
+
+	private static boolean isAvailable(NifteConfig config) {
+		return config.zoomEnabled && NifteKeybinds.isBound(NifteKeybinds.zoom);
 	}
 
 	private static ZoomTransition transition() {
@@ -105,14 +109,25 @@ public final class ZoomFeature {
 		return transition == null ? ZoomTransition.SMOOTH : transition;
 	}
 
-	private static void advanceAnimation(float target, ZoomTransition transition) {
-		if (Float.isNaN(target) || Float.isNaN(animatedFov)) {
+	private static boolean hasVanillaFov() {
+		return Float.isFinite(lastVanillaFov) && lastVanillaFov > 0.0F;
+	}
+
+	private static boolean isAnimating() {
+		return Float.isFinite(animatedFov);
+	}
+
+	private static void seedAnimationIfNeeded() {
+		if (isAnimating() || !hasVanillaFov()) {
 			return;
 		}
 
-		if (!transition.isSmooth()) {
-			oldAnimatedFov = target;
-			animatedFov = target;
+		oldAnimatedFov = lastVanillaFov;
+		animatedFov = lastVanillaFov;
+	}
+
+	private static void advanceAnimation(float target) {
+		if (!isAnimating() || !Float.isFinite(target)) {
 			return;
 		}
 
@@ -124,14 +139,13 @@ public final class ZoomFeature {
 	}
 
 	private static boolean settled(float target) {
-		return Float.isFinite(animatedFov)
-			&& Float.isFinite(oldAnimatedFov)
+		return isAnimating()
+			&& Float.isFinite(target)
 			&& Math.abs(animatedFov - target) < SETTLE_EPSILON
 			&& Math.abs(oldAnimatedFov - target) < SETTLE_EPSILON;
 	}
 
-	private static void resetAnimation() {
-		lastVanillaFov = Float.NaN;
+	private static void clearAnimation() {
 		oldAnimatedFov = Float.NaN;
 		animatedFov = Float.NaN;
 	}
