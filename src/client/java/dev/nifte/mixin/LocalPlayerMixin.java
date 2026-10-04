@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import dev.nifte.feature.autototem.AutoTotemFeature;
-import dev.nifte.feature.dropconfirm.DropConfirmFeature;
 import dev.nifte.feature.camera.DynamicThirdPerson;
 import dev.nifte.feature.combat.IgnoreGrassFeature;
 import dev.nifte.feature.sprint.KeepSprintFeature;
@@ -33,17 +32,9 @@ public abstract class LocalPlayerMixin {
 		cir.setReturnValue(!this.nifte$isSprintingPossible(player.getAbilities().flying) || !player.input.hasForwardImpulse());
 	}
 
-	@Inject(method = "displayItemActivation", at = @At("TAIL"), require = 0)
+	@Inject(method = "displayItemActivation", at = @At("TAIL"))
 	private void nifte$autoTotem(ItemStack itemStack, CallbackInfo ci) {
 		AutoTotemFeature.onItemActivation(itemStack);
-	}
-
-	@Inject(method = "drop(Z)Z", at = @At("HEAD"), cancellable = true, require = 0)
-	private void nifte$dropConfirm(boolean dropAll, CallbackInfoReturnable<Boolean> cir) {
-		LocalPlayer player = (LocalPlayer) (Object) this;
-		if (DropConfirmFeature.shouldBlockDrop(player.getInventory().getSelectedItem())) {
-			cir.setReturnValue(false);
-		}
 	}
 
 	@Inject(method = "raycastHitResult", at = @At("RETURN"), cancellable = true)

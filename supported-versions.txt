@@ -1,9 +1,0 @@
-# Minecraft versions to build. `./gradlew build` writes one jar per line into build/libs.
-# Comment out or delete a line to stop building that version.
-#
-# minecraft  fabric-api     cloth-config  mod-menu
-# Version-specific code for a line lives in src/<minecraft>/java.
-# minecraft_version in gradle.properties selects which listed version the IDE uses.
-
-26.2  0.161.0+26.2  26.2.155  20.0.3
-26.3  0.161.0+26.3  26.3.159  21.0.0

@@ -16,8 +16,7 @@ public abstract class EntityRenderDispatcherMixin {
 	@Inject(
 		method = "shouldRender(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/culling/Frustum;DDDF)Z",
 		at = @At("HEAD"),
-		cancellable = true,
-		require = 0
+		cancellable = true
 	)
 	private void nifte$hideDeadMobs(
 		Entity entity,
@@ -28,27 +27,6 @@ public abstract class EntityRenderDispatcherMixin {
 		float partialTick,
 		CallbackInfoReturnable<Boolean> cir
 	) {
-		nifte$hideDeadMob(entity, cir);
-	}
-
-	@Inject(
-		method = "shouldRender(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/culling/Frustum;DDD)Z",
-		at = @At("HEAD"),
-		cancellable = true,
-		require = 0
-	)
-	private void nifte$hideDeadMobsLegacy(
-		Entity entity,
-		Frustum culler,
-		double camX,
-		double camY,
-		double camZ,
-		CallbackInfoReturnable<Boolean> cir
-	) {
-		nifte$hideDeadMob(entity, cir);
-	}
-
-	private void nifte$hideDeadMob(Entity entity, CallbackInfoReturnable<Boolean> cir) {
 		if (HideDeadMobs.shouldHide(entity)) {
 			cir.setReturnValue(false);
 		}

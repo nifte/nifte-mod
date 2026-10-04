@@ -1,7 +1,6 @@
 {
   "required": true,
   "package": "dev.nifte.mixin",
-  "plugin": "dev.nifte.mixin.NifteMixinPlugin",
   "compatibilityLevel": "JAVA_25",
   "client": [
     "AbstractConfigEntryMixin",
@@ -23,6 +22,7 @@
     "ElementEntryMixin",
     "EntityRenderDispatcherMixin",
     "FogRendererMixin",
+    "FirstPersonHandsAndItemsRendererMixin",
     "GameRendererMixin",
     "GuiGraphicsExtractorMixin",
     "HudMixin",
