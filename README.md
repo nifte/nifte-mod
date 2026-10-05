@@ -6,8 +6,8 @@ This mod is **client only**. It does not need to be installed on servers.
 
 ## Requirements
 
-- Minecraft 26.3
-- Fabric Loader 0.19.5+
+- Minecraft 26.2+
+- Fabric Loader
 - [Fabric API](https://modrinth.com/mod/fabric-api)
 - [Cloth Config](https://modrinth.com/mod/cloth-config)
 - [Mod Menu](https://modrinth.com/mod/modmenu) (recommended, but not required)
