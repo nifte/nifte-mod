@@ -3,6 +3,8 @@ package dev.nifte.feature.drag;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -39,14 +41,14 @@ public final class ContainerDragFeature {
 		}
 
 		Slot slot = slotAt(screen, event);
-		if (event.button() == 0 && event.hasShiftDown() && InventoryClicks.cursorEmpty() && slot != null) {
+		if (isLeftClick(event) && event.hasShiftDown() && InventoryClicks.cursorEmpty() && slot != null) {
 			shiftDragging = true;
 			shiftVisitedSlots.clear();
 			shiftVisitedSlots.add(slot.index);
 			return false;
 		}
 
-		if (event.button() != 1 || InventoryClicks.cursorEmpty() || slot == null) {
+		if (!isRightClick(event) || InventoryClicks.cursorEmpty() || slot == null) {
 			return false;
 		}
 
@@ -62,7 +64,7 @@ public final class ContainerDragFeature {
 		}
 
 		Slot slot = slotAt(screen, event);
-		if (rightDragging && event.button() == 1) {
+		if (rightDragging && isRightClick(event)) {
 			if (slot == null) {
 				lastRightDepositSlot = -1;
 				return true;
@@ -76,7 +78,7 @@ public final class ContainerDragFeature {
 			return true;
 		}
 
-		if (shiftDragging && event.button() == 0 && event.hasShiftDown()) {
+		if (shiftDragging && isLeftClick(event) && event.hasShiftDown()) {
 			tryQuickMove(slot);
 		}
 
@@ -84,9 +86,17 @@ public final class ContainerDragFeature {
 	}
 
 	public static boolean handleRelease(AbstractContainerScreen<?> screen, MouseButtonEvent event) {
-		boolean cancelVanilla = rightDragging && event.button() == 1 && enabledOn(screen);
+		boolean cancelVanilla = rightDragging && isRightClick(event) && enabledOn(screen);
 		clear();
 		return cancelVanilla;
+	}
+
+	private static boolean isLeftClick(MouseButtonEvent event) {
+		return event.button() == InputConstants.MOUSE_BUTTON_LEFT;
+	}
+
+	private static boolean isRightClick(MouseButtonEvent event) {
+		return event.button() == InputConstants.MOUSE_BUTTON_RIGHT;
 	}
 
 	private static boolean enabledOn(AbstractContainerScreen<?> screen) {

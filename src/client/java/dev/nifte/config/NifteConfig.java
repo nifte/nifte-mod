@@ -18,8 +18,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 import dev.nifte.Nifte;
-import dev.nifte.feature.glow.EntityGlowFeature;
-import dev.nifte.hud.PlayerTracers;
 
 public final class NifteConfig {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -109,12 +107,6 @@ public final class NifteConfig {
 	public boolean shulkerBoxTooltipEnabled = true;
 
 	public boolean hideDeadMobs = false;
-	public boolean highlightHostileMobs = false;
-	public int highlightHostileMobsRange = EntityGlowFeature.RANGE_DEFAULT;
-	public boolean highlightOtherPlayers = false;
-	public int highlightOtherPlayersRange = EntityGlowFeature.RANGE_DEFAULT;
-	public boolean playerTracersEnabled = false;
-	public int playerTracersRange = PlayerTracers.RANGE_DEFAULT;
 	public boolean ignoreGrassInCombat = false;
 	public boolean quickEatEnabled = true;
 	public boolean quickUseEnabled = true;
@@ -161,9 +153,6 @@ public final class NifteConfig {
 				}
 
 				loaded.mobHealthReach = Mth.clamp(loaded.mobHealthReach, 1, 20);
-				loaded.highlightHostileMobsRange = Mth.clamp(loaded.highlightHostileMobsRange, EntityGlowFeature.RANGE_MIN, EntityGlowFeature.RANGE_MAX);
-				loaded.highlightOtherPlayersRange = Mth.clamp(loaded.highlightOtherPlayersRange, EntityGlowFeature.RANGE_MIN, EntityGlowFeature.RANGE_MAX);
-				loaded.playerTracersRange = Mth.clamp(loaded.playerTracersRange, PlayerTracers.RANGE_MIN, PlayerTracers.RANGE_MAX);
 
 				if (loaded.dropConfirmMode == null) {
 					loaded.dropConfirmMode = DropConfirmMode.DISABLED;
@@ -199,14 +188,6 @@ public final class NifteConfig {
 
 				if (!json.has("quickEatEnabled") && json.has("fastEatingEnabled")) {
 					loaded.quickEatEnabled = json.get("fastEatingEnabled").getAsBoolean();
-				}
-
-				if (!json.has("highlightHostileMobs") && json.has("glowHostileMobs")) {
-					loaded.highlightHostileMobs = json.get("glowHostileMobs").getAsBoolean();
-				}
-
-				if (!json.has("highlightOtherPlayers") && json.has("glowOtherPlayers")) {
-					loaded.highlightOtherPlayers = json.get("glowOtherPlayers").getAsBoolean();
 				}
 
 				if (json.has("handRestockEnabled") && !json.has("blockRestockEnabled") && !json.has("bucketRestockEnabled")) {

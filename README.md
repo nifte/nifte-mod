@@ -10,7 +10,7 @@ This mod is **client only**. It does not need to be installed on servers.
 - Fabric Loader 0.19.3+
 - [Fabric API](https://modrinth.com/mod/fabric-api)
 - [Cloth Config](https://modrinth.com/mod/cloth-config)
-- [Mod Menu](https://modrinth.com/mod/modmenu) (recommended, for the config button)
+- [Mod Menu](https://modrinth.com/mod/modmenu) (recommended, but not required)
 
 ## Features
 
@@ -57,9 +57,6 @@ This mod is **client only**. It does not need to be installed on servers.
 ### Combat
 
 - Hide death animations
-- Highlight hostile mobs
-- Highlight other players
-- Player tracers
 - Projectile trajectory previews
 - Attack through foliage without breaking it
 - Keep sprinting when you bump into a wall
