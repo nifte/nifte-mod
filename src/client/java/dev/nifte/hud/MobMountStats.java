@@ -2,6 +2,7 @@ package dev.nifte.hud;
 
 import java.util.Locale;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -21,6 +22,10 @@ final class MobMountStats {
 	private static final double TICKS_PER_SECOND = 20.0;
 	private static final double VERTICAL_DRAG = 0.98;
 	private static final int MAX_JUMP_STEPS = 4096;
+	private static final double MIN_SPEED = 0.1125;
+	private static final double MAX_SPEED = 0.3375;
+	private static final double MIN_JUMP = 0.4;
+	private static final double MAX_JUMP = 1.0;
 
 	private final Component speed;
 	private final Component jump;
@@ -44,9 +49,27 @@ final class MobMountStats {
 		}
 
 		return new MobMountStats(
-			Component.translatable("nifte.hud.mount.speed", format(blocksPerSecond(horse))),
-			Component.translatable("nifte.hud.mount.jump", format(jumpHeight(horse)))
+			stat("nifte.hud.mount.speed", blocksPerSecond(horse), horse.getAttributeBaseValue(Attributes.MOVEMENT_SPEED), MIN_SPEED, MAX_SPEED),
+			stat("nifte.hud.mount.jump", jumpHeight(horse), horse.getAttributeBaseValue(Attributes.JUMP_STRENGTH), MIN_JUMP, MAX_JUMP)
 		);
+	}
+
+	private static Component stat(String key, double shown, double attribute, double min, double max) {
+		Component number = Component.literal(format(shown)).withStyle(grade(attribute, min, max));
+		return Component.translatable(key, number);
+	}
+
+	private static ChatFormatting grade(double value, double min, double max) {
+		double ratio = (value - min) / (max - min);
+		if (ratio >= 2.0 / 3.0) {
+			return ChatFormatting.GREEN;
+		}
+
+		if (ratio >= 1.0 / 3.0) {
+			return ChatFormatting.YELLOW;
+		}
+
+		return ChatFormatting.RED;
 	}
 
 	static void draw(GuiGraphicsExtractor graphics, Font font, MobMountStats stats, int x, int y) {

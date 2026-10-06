@@ -118,6 +118,11 @@ public final class MobHealthHud {
 		return entity.isAlive()
 			&& !entity.isRemoved()
 			&& entity.level() == minecraft.level
+			&& !riding(minecraft, entity)
 			&& (entity.getMaxHealth() > 0.0F || entity.getHealth() > 0.0F);
+	}
+
+	private static boolean riding(Minecraft minecraft, LivingEntity entity) {
+		return minecraft.player != null && entity.hasIndirectPassenger(minecraft.player);
 	}
 }
