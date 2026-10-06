@@ -132,11 +132,12 @@ def resolveModrinthInstanceId(String profileName) {
 		throw new GradleException("Modrinth app database not found at ${db}")
 	}
 
+	// Single quotes: Java's Windows process launcher strips double quotes from node -e scripts.
 	def script = """
-const { DatabaseSync } = require("node:sqlite");
+const { DatabaseSync } = require('node:sqlite');
 const db = new DatabaseSync(process.argv[1], { readOnly: true });
 const name = process.argv[2];
-const row = db.prepare("SELECT id FROM instances WHERE path = ? OR name = ?").get(name, name);
+const row = db.prepare('SELECT id FROM instances WHERE path = ? OR name = ?').get(name, name);
 if (!row) process.exit(2);
 process.stdout.write(row.id);
 """
