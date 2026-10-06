@@ -96,8 +96,40 @@ publishing {
 
 def jarTask = tasks.named("jar", Jar)
 
-def copyJarToModrinthProfile() {
-	def destDir = file(project.modrinth_dev_mods)
+def resolveModrinthInstance(String profileName) {
+	def configuredId = project.findProperty("modrinth_dev_instance_id")?.toString() ?: ""
+	def db = file("${System.getenv("APPDATA")}/ModrinthApp/app.db")
+	if (!db.file) {
+		throw new GradleException("Modrinth app database not found at ${db}")
+	}
+
+	// Single quotes: Java's Windows process launcher strips double quotes from node -e scripts.
+	def script = '''
+const { DatabaseSync } = require('node:sqlite');
+const db = new DatabaseSync(process.argv[1], { readOnly: true });
+const name = process.argv[2];
+const configuredId = process.argv[3];
+const row = configuredId
+	? db.prepare('SELECT id, path FROM instances WHERE id = ?').get(configuredId)
+	: db.prepare('SELECT id, path FROM instances WHERE name = ? OR path = ? ORDER BY CASE WHEN name = ? THEN 0 ELSE 1 END LIMIT 1').get(name, name, name);
+if (!row) process.exit(2);
+process.stdout.write(JSON.stringify({ id: row.id, path: row.path }));
+'''
+	def stdout = new ByteArrayOutputStream()
+	def stderr = new ByteArrayOutputStream()
+	def lookup = new ProcessBuilder("node", "--experimental-sqlite", "-e", script, db.absolutePath, profileName, configuredId).start()
+	lookup.consumeProcessOutput(stdout, stderr)
+	if (lookup.waitFor() == 0) {
+		def parsed = new groovy.json.JsonSlurper().parseText(stdout.toString().trim())
+		return [id: parsed.id.toString(), path: parsed.path.toString()]
+	}
+
+	throw new GradleException("Could not find Modrinth instance '${profileName}'. ${stderr}")
+}
+
+def copyJarToModrinthProfile(Map instance) {
+	def profilesDir = file("${System.getenv("APPDATA")}/ModrinthApp/profiles")
+	def destDir = new File(profilesDir, "${instance.path}/mods")
 	def builtJar = tasks.named("jar", Jar).get().archiveFile.get().asFile
 	destDir.mkdirs()
 	destDir.eachFile { file ->
@@ -109,6 +141,7 @@ def copyJarToModrinthProfile() {
 		from builtJar
 		into destDir
 	}
+	logger.lifecycle("Copied ${builtJar.name} into Modrinth instance '${instance.path}' (${destDir})")
 }
 
 tasks.register("copyToModrinthProfile") {
@@ -117,44 +150,8 @@ tasks.register("copyToModrinthProfile") {
 	dependsOn jarTask
 
 	doLast {
-		copyJarToModrinthProfile()
+		copyJarToModrinthProfile(resolveModrinthInstance(project.modrinth_dev_profile.toString()))
 	}
-}
-
-def resolveModrinthInstanceId(String profileName) {
-	def configured = project.findProperty("modrinth_dev_instance_id")
-	if (configured) {
-		return configured.toString()
-	}
-
-	def db = file("${System.getenv("APPDATA")}/ModrinthApp/app.db")
-	if (!db.file) {
-		throw new GradleException("Modrinth app database not found at ${db}")
-	}
-
-	// Single quotes: Java's Windows process launcher strips double quotes from node -e scripts.
-	def script = """
-const { DatabaseSync } = require('node:sqlite');
-const db = new DatabaseSync(process.argv[1], { readOnly: true });
-const name = process.argv[2];
-const row = db.prepare('SELECT id FROM instances WHERE path = ? OR name = ?').get(name, name);
-if (!row) process.exit(2);
-process.stdout.write(row.id);
-"""
-	def stdout = new ByteArrayOutputStream()
-	def stderr = new ByteArrayOutputStream()
-	def lookup = new ProcessBuilder("node", "--experimental-sqlite", "-e", script, db.absolutePath, profileName).start()
-	lookup.consumeProcessOutput(stdout, stderr)
-	if (lookup.waitFor() == 0) {
-		return stdout.toString().trim()
-	}
-
-	def matcher = (db.getText("ISO-8859-1") =~ /(local:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})${java.util.regex.Pattern.quote(profileName)}/)
-	if (matcher.find()) {
-		return matcher.group(1)
-	}
-
-	throw new GradleException("Could not find Modrinth instance '${profileName}'. ${stderr}")
 }
 
 def killMinecraftProcesses() {
@@ -237,17 +234,15 @@ def launchModrinthDev = tasks.register("launchModrinthDev") {
 	onlyIf { isExplicitTestRequest() }
 
 	doLast {
-		copyJarToModrinthProfile()
-
 		def profileName = project.modrinth_dev_profile.toString()
-		def instanceId = resolveModrinthInstanceId(profileName)
-		def uri = "modrinth://launch/instance/${instanceId}"
+		def instance = resolveModrinthInstance(profileName)
+		def uri = "modrinth://launch/instance/${instance.id}"
 		def appExe = file("${System.getenv("LOCALAPPDATA")}/Modrinth App/Modrinth App.exe")
 		if (!appExe.file) {
 			throw new GradleException("Modrinth App not found at ${appExe}")
 		}
 
-		logger.lifecycle("Launching Modrinth profile '${profileName}' (${instanceId})")
+		logger.lifecycle("Launching Modrinth profile '${profileName}' (${instance.path}, ${instance.id})")
 		if (minecraftClientRunning()) {
 			logger.lifecycle("Stopping the running Minecraft client")
 			killMinecraftProcesses()
@@ -257,6 +252,8 @@ def launchModrinthDev = tasks.register("launchModrinthDev") {
 			startDetached(appExe.absolutePath)
 			waitForModrinthApp()
 		}
+		// Copy after the app is watching so the content index picks up the jar.
+		copyJarToModrinthProfile(instance)
 		startDetached(appExe.absolutePath, uri)
 	}
 }
