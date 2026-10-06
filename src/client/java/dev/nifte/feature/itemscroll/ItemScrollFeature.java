@@ -35,6 +35,7 @@ public final class ItemScrollFeature {
 
 		boolean toPlayer = scrollY < 0.0;
 		boolean hoveredIsPlayer = InventoryClicks.isPlayerInventorySlot(hovered, minecraft);
+		boolean wholeStack = minecraft.hasShiftDown();
 		if (isTakeOnlySlot(hovered)) {
 			if (!toPlayer || hoveredIsPlayer || !hovered.mayPickup(player)) {
 				return false;
@@ -45,10 +46,14 @@ public final class ItemScrollFeature {
 		}
 
 		if (toPlayer == hoveredIsPlayer) {
-			return moveOneFromOtherInventory(screen.getMenu(), hovered, hoveredIsPlayer, player);
+			return wholeStack
+				? moveStackFromOtherInventory(screen.getMenu(), hovered, hoveredIsPlayer, player)
+				: moveOneFromOtherInventory(screen.getMenu(), hovered, hoveredIsPlayer, player);
 		}
 
-		return moveOneFromHovered(screen.getMenu(), hovered, hoveredIsPlayer, player);
+		return wholeStack
+			? moveWholeStack(screen.getMenu(), hovered, hoveredIsPlayer, player)
+			: moveOneFromHovered(screen.getMenu(), hovered, hoveredIsPlayer, player);
 	}
 
 	private static boolean moveOneFromHovered(AbstractContainerMenu menu, Slot source, boolean sourceIsPlayer, Player player) {
@@ -68,8 +73,37 @@ public final class ItemScrollFeature {
 	}
 
 	private static boolean moveOneFromOtherInventory(AbstractContainerMenu menu, Slot hovered, boolean hoveredIsPlayer, Player player) {
+		Slot source = findMatchingSource(menu, hovered, hoveredIsPlayer, player);
+		if (source == null) {
+			return false;
+		}
+
+		InventoryClicks.pickup(source.index);
+		InventoryClicks.pickupOne(hovered.index);
+		returnRemainingToSource(source);
+		return true;
+	}
+
+	private static boolean moveStackFromOtherInventory(AbstractContainerMenu menu, Slot hovered, boolean hoveredIsPlayer, Player player) {
+		Slot source = findMatchingSource(menu, hovered, hoveredIsPlayer, player);
+		if (source == null) {
+			return false;
+		}
+
+		return moveWholeStack(menu, source, !hoveredIsPlayer, player);
+	}
+
+	private static boolean moveWholeStack(AbstractContainerMenu menu, Slot source, boolean sourceIsPlayer, Player player) {
+		if (!source.mayPickup(player) || findDestination(menu, source.getItem(), source, sourceIsPlayer) == null) {
+			return false;
+		}
+
+		InventoryClicks.quickMove(source.index);
+		return true;
+	}
+
+	private static Slot findMatchingSource(AbstractContainerMenu menu, Slot hovered, boolean hoveredIsPlayer, Player player) {
 		ItemStack target = hovered.getItem();
-		Slot source = null;
 		for (Slot slot : menu.slots) {
 			if (slot == hovered || slot instanceof ResultSlot || slot.isFake() || !slot.hasItem() || isTakeOnlySlot(slot)) {
 				continue;
@@ -81,19 +115,11 @@ public final class ItemScrollFeature {
 			}
 
 			if (ItemStack.isSameItemSameComponents(slot.getItem(), target) && slot.mayPickup(player)) {
-				source = slot;
-				break;
+				return slot;
 			}
 		}
 
-		if (source == null) {
-			return false;
-		}
-
-		InventoryClicks.pickup(source.index);
-		InventoryClicks.pickupOne(hovered.index);
-		returnRemainingToSource(source);
-		return true;
+		return null;
 	}
 
 	private static void returnRemainingToSource(Slot source) {

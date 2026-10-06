@@ -4,13 +4,11 @@ final class AutoToolScore implements Comparable<AutoToolScore> {
 	private final boolean canHarvest;
 	private final int enchantmentPriority;
 	private final float speed;
-	private final boolean healthy;
 
-	AutoToolScore(boolean canHarvest, int enchantmentPriority, float speed, boolean healthy) {
+	AutoToolScore(boolean canHarvest, int enchantmentPriority, float speed) {
 		this.canHarvest = canHarvest;
 		this.enchantmentPriority = enchantmentPriority;
 		this.speed = speed;
-		this.healthy = healthy;
 	}
 
 	boolean isBetterThan(AutoToolScore other) {
@@ -29,11 +27,6 @@ final class AutoToolScore implements Comparable<AutoToolScore> {
 			return enchantment;
 		}
 
-		int miningSpeed = Float.compare(this.speed, other.speed);
-		if (miningSpeed != 0) {
-			return miningSpeed;
-		}
-
-		return Boolean.compare(this.healthy, other.healthy);
+		return Float.compare(this.speed, other.speed);
 	}
 }

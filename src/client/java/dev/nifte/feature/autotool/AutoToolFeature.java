@@ -95,8 +95,7 @@ public final class AutoToolFeature {
 		boolean canHarvest = !state.requiresCorrectToolForDrops() || usable.isCorrectToolForDrops(state);
 		int enchantmentPriority = enchantmentPriority(usable, state, level);
 		float speed = miningSpeed(usable, state);
-		boolean healthy = !usable.nextDamageWillBreak();
-		return new AutoToolScore(canHarvest, enchantmentPriority, speed, healthy);
+		return new AutoToolScore(canHarvest, enchantmentPriority, speed);
 	}
 
 	private static float miningSpeed(ItemStack stack, BlockState state) {

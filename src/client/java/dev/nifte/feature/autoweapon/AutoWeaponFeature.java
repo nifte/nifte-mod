@@ -96,8 +96,7 @@ public final class AutoWeaponFeature {
 	private static AutoWeaponScore score(LocalPlayer player, ItemStack stack, Entity target, Vec3 hitLocation) {
 		ItemStack usable = ToolProtectFeature.shouldBlock(stack) ? ItemStack.EMPTY : stack;
 		boolean canReach = player.getAttackRangeWith(usable).isInRange(player, hitLocation);
-		boolean healthy = !usable.nextDamageWillBreak();
-		return new AutoWeaponScore(canReach, damage(player, usable, target), healthy);
+		return new AutoWeaponScore(canReach, damage(player, usable, target));
 	}
 
 	private static float damage(LocalPlayer player, ItemStack stack, Entity target) {

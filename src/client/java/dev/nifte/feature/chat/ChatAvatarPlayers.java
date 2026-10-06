@@ -1,5 +1,6 @@
 package dev.nifte.feature.chat;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -8,7 +9,10 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.util.Util;
+import net.minecraft.world.entity.EntityTypes;
 
 import org.jspecify.annotations.Nullable;
 
@@ -40,6 +44,23 @@ final class ChatAvatarPlayers {
 		}
 
 		return null;
+	}
+
+	static @Nullable UUID firstHoveredPlayer(Component message) {
+		return message.visit((style, text) -> {
+			UUID uuid = hoveredPlayer(style);
+			return uuid == null ? Optional.empty() : Optional.of(uuid);
+		}, Style.EMPTY).orElse(null);
+	}
+
+	static boolean mentions(PlayerInfo player, Component message, @Nullable ClientPacketListener connection) {
+		UUID hovered = firstHoveredPlayer(message);
+		if (hovered != null) {
+			return player.getProfile().id().equals(hovered);
+		}
+
+		PlayerInfo best = findMentioned(connection, message);
+		return best != null && player.getProfile().id().equals(best.getProfile().id());
 	}
 
 	static @Nullable PlayerInfo findMentioned(@Nullable ClientPacketListener connection, Component message) {
@@ -132,5 +153,18 @@ final class ChatAvatarPlayers {
 
 	private static boolean isNameCharacter(char character) {
 		return Character.isLetterOrDigit(character) || character == '_';
+	}
+
+	private static @Nullable UUID hoveredPlayer(Style style) {
+		if (!(style.getHoverEvent() instanceof HoverEvent.ShowEntity show)) {
+			return null;
+		}
+
+		HoverEvent.EntityTooltipInfo entity = show.entity();
+		if (entity.type != EntityTypes.PLAYER || Util.NIL_UUID.equals(entity.uuid)) {
+			return null;
+		}
+
+		return entity.uuid;
 	}
 }
