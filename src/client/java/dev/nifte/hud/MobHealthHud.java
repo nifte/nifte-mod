@@ -1,9 +1,13 @@
 package dev.nifte.hud;
 
+import java.util.List;
+
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Util;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 
 import org.jspecify.annotations.Nullable;
@@ -37,8 +41,14 @@ public final class MobHealthHud {
 
 		int containers = MobHealthHearts.containers(target);
 		int armor = MobHealthArmor.of(target);
-		int width = MobHealthHudLayout.width(containers, armor);
-		int height = MobHealthHudLayout.height(containers, armor);
+		Font font = minecraft.font;
+		List<MobEffectInstance> effects = MobHealthEffects.visible(target);
+		MobMountStats stats = MobMountStats.of(target);
+		int statsWidth = stats == null ? 0 : Math.max(font.width(stats.speed()), font.width(stats.jump()));
+		int statLines = stats == null ? 0 : MobMountStats.LINES;
+		int width = MobHealthHudLayout.width(containers, armor, statsWidth);
+		int effectRows = MobHealthHudLayout.effectRows(effects.size(), width);
+		int height = MobHealthHudLayout.height(containers, armor, effectRows, statLines, font.lineHeight);
 		int x = HudLayout.x(config.mobHealthAnchor, graphics.guiWidth(), config.mobHealthOffsetX, Math.round(width * config.mobHealthScale));
 		int y = HudLayout.y(config.mobHealthAnchor, graphics.guiHeight(), config.mobHealthOffsetY, Math.round(height * config.mobHealthScale));
 		int previewX = x + Math.round(MobHealthHudLayout.previewX(config.mobHealthAnchor, containers, armor) * config.mobHealthScale);
@@ -62,6 +72,14 @@ public final class MobHealthHud {
 		graphics.pose().scale(config.mobHealthScale, config.mobHealthScale);
 		MobHealthArmor.draw(graphics, armor, barsX, MobHealthHudLayout.armorY(containers, armor));
 		MobHealthHearts.draw(graphics, target, barsX, MobHealthHudLayout.heartsY(containers, armor));
+		if (!effects.isEmpty()) {
+			MobHealthEffects.draw(graphics, font, effects, 0, MobHealthHudLayout.effectsY(containers, armor), width);
+		}
+
+		if (stats != null) {
+			MobMountStats.draw(graphics, font, stats, 0, MobHealthHudLayout.statsY(containers, armor, effectRows));
+		}
+
 		graphics.pose().popMatrix();
 	}
 

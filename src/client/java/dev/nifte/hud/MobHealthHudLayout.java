@@ -12,6 +12,10 @@ final class MobHealthHudLayout {
 	static final int HEART_STEP = 8;
 	static final int HEARTS_PER_ROW = 10;
 	static final int ARMOR_ROW = 10;
+	static final int EFFECT_FRAME = 24;
+	static final int EFFECT_ICON = 18;
+	static final int EFFECT_ICON_INSET = 3;
+	static final int EFFECT_GAP = 1;
 
 	private MobHealthHudLayout() {
 	}
@@ -57,12 +61,62 @@ final class MobHealthHudLayout {
 		return heartsHeight(containers) + (hasArmor(armor) ? ARMOR_ROW : 0);
 	}
 
-	static int width(int containers, int armor) {
-		return PREVIEW_WIDTH + GAP + barsWidth(containers, armor);
+	static int width(int containers, int armor, int statsTextWidth) {
+		return Math.max(PREVIEW_WIDTH + GAP + barsWidth(containers, armor), statsTextWidth);
 	}
 
-	static int height(int containers, int armor) {
+	static int bodyHeight(int containers, int armor) {
 		return Math.max(PREVIEW_HEIGHT, barsHeight(containers, armor));
+	}
+
+	static int iconsPerRow(int width) {
+		return Math.max(1, (width + EFFECT_GAP) / (EFFECT_FRAME + EFFECT_GAP));
+	}
+
+	static int effectRows(int effectCount, int width) {
+		if (effectCount <= 0) {
+			return 0;
+		}
+
+		return Mth.ceil(effectCount / (float) iconsPerRow(width));
+	}
+
+	static int effectsHeight(int rows) {
+		if (rows <= 0) {
+			return 0;
+		}
+
+		return rows * EFFECT_FRAME + (rows - 1) * EFFECT_GAP;
+	}
+
+	static int extrasHeight(int effectRows, int statLines, int lineHeight) {
+		int extra = 0;
+		if (effectRows > 0) {
+			extra += GAP + effectsHeight(effectRows);
+		}
+
+		if (statLines > 0) {
+			extra += GAP + statLines * lineHeight;
+		}
+
+		return extra;
+	}
+
+	static int height(int containers, int armor, int effectRows, int statLines, int lineHeight) {
+		return bodyHeight(containers, armor) + extrasHeight(effectRows, statLines, lineHeight);
+	}
+
+	static int effectsY(int containers, int armor) {
+		return bodyHeight(containers, armor) + GAP;
+	}
+
+	static int statsY(int containers, int armor, int effectRows) {
+		int y = bodyHeight(containers, armor) + GAP;
+		if (effectRows > 0) {
+			y += effectsHeight(effectRows) + GAP;
+		}
+
+		return y;
 	}
 
 	static int previewX(HudAnchor anchor, int containers, int armor) {
@@ -70,7 +124,7 @@ final class MobHealthHudLayout {
 	}
 
 	static int previewY(int containers, int armor) {
-		return (height(containers, armor) - PREVIEW_HEIGHT) / 2;
+		return (bodyHeight(containers, armor) - PREVIEW_HEIGHT) / 2;
 	}
 
 	static int barsX(HudAnchor anchor, int containers, int armor) {
@@ -78,7 +132,7 @@ final class MobHealthHudLayout {
 	}
 
 	static int barsY(int containers, int armor) {
-		return (height(containers, armor) - barsHeight(containers, armor)) / 2;
+		return (bodyHeight(containers, armor) - barsHeight(containers, armor)) / 2;
 	}
 
 	static int armorY(int containers, int armor) {
