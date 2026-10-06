@@ -12,7 +12,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -29,6 +31,7 @@ public final class BedrockBridging {
 	private static final double EDGE = 0.25;
 	private static final double GRAZE = 0.35;
 	private static final double FACE_INSET = 0.45;
+	private static final double TARGET_INSET = 1.0E-3;
 
 	private BedrockBridging() {
 	}
@@ -65,6 +68,10 @@ public final class BedrockBridging {
 
 	private static @Nullable BridgePlacement find(LocalPlayer player, InteractionHand hand, @Nullable HitResult vanilla) {
 		if (!NifteConfig.get().bedrockBridgingEnabled || player.isSpectator() || !(player.getItemInHand(hand).getItem() instanceof BlockItem)) {
+			return null;
+		}
+
+		if (clickedPartialBlock(player, vanilla)) {
 			return null;
 		}
 
@@ -113,6 +120,43 @@ public final class BedrockBridging {
 		return !new AABB(pos).clip(from, to).isEmpty();
 	}
 
+	private static boolean clickedPartialBlock(LocalPlayer player, @Nullable HitResult vanilla) {
+		if (!(vanilla instanceof BlockHitResult blockHit) || blockHit.getType() != HitResult.Type.BLOCK) {
+			return false;
+		}
+
+		BlockPos pos = blockHit.getBlockPos();
+		Level level = player.level();
+		BlockState state = level.getBlockState(pos);
+		return !state.canBeReplaced() && !Block.isShapeFullBlock(state.getShape(level, pos, CollisionContext.of(player)));
+	}
+
+	private static boolean canSeeTarget(Level level, Vec3 eye, BlockPos support, BlockPos target, Direction face) {
+		Vec3 to = closestPoint(target, eye);
+		if (eye.distanceToSqr(to) <= 1.0E-8) {
+			return true;
+		}
+
+		BlockHitResult hit = level.clip(new ClipContext(eye, to, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, CollisionContext.empty()));
+		if (hit.getType() != HitResult.Type.BLOCK || hit.getBlockPos().equals(target)) {
+			return true;
+		}
+
+		if (!hit.getBlockPos().equals(support)) {
+			return false;
+		}
+
+		return hit.getDirection().getOpposite() != face;
+	}
+
+	private static Vec3 closestPoint(BlockPos pos, Vec3 eye) {
+		return new Vec3(
+			Mth.clamp(eye.x, pos.getX() + TARGET_INSET, pos.getX() + 1.0 - TARGET_INSET),
+			Mth.clamp(eye.y, pos.getY() + TARGET_INSET, pos.getY() + 1.0 - TARGET_INSET),
+			Mth.clamp(eye.z, pos.getZ() + TARGET_INSET, pos.getZ() + 1.0 - TARGET_INSET)
+		);
+	}
+
 	private static @Nullable BridgePlacement scan(LocalPlayer player, InteractionHand hand, Vec3 from, Vec3 to, Vec3 look) {
 		Level level = player.level();
 		CollisionContext context = CollisionContext.of(player);
@@ -123,12 +167,13 @@ public final class BedrockBridging {
 			BlockPos.containing(sweep.maxX, sweep.maxY, sweep.maxZ)
 		)) {
 			BlockPos support = cursor.immutable();
-			if (level.getBlockState(support).canBeReplaced()) {
+			BlockState state = level.getBlockState(support);
+			if (state.canBeReplaced()) {
 				continue;
 			}
 
-			VoxelShape shape = level.getBlockState(support).getShape(level, support, context);
-			if (shape.isEmpty()) {
+			VoxelShape shape = state.getShape(level, support, context);
+			if (!Block.isShapeFullBlock(shape)) {
 				continue;
 			}
 
@@ -207,7 +252,8 @@ public final class BedrockBridging {
 			|| !level.getWorldBorder().isWithinBounds(target)
 			|| !player.isWithinBlockInteractionRange(support, 1.0)
 			|| !player.isWithinBlockInteractionRange(target, 0.0)
-			|| !level.getBlockState(target).canBeReplaced()) {
+			|| !level.getBlockState(target).canBeReplaced()
+			|| !canSeeTarget(level, from, support, target, face)) {
 			return null;
 		}
 
