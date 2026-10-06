@@ -68,6 +68,7 @@ This mod is **client only**. It does not need to be installed on servers.
 - Block restocking
 - Bucket restocking
 - Remove mining delay
+- Mining progress on the attack indicator
 
 ### Crafting
 

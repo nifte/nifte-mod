@@ -38,6 +38,7 @@
     "LivingEntityMixin",
     "LocalPlayerMixin",
     "MinecraftMixin",
+    "MultiPlayerGameModeAccessor",
     "MultiPlayerGameModeMixin",
     "MouseHandlerMixin",
     "ParticleEngineMixin",

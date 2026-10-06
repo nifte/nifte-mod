@@ -95,6 +95,7 @@ public final class NifteConfig {
 	public boolean bucketRestockEnabled = false;
 	public boolean consumableRestockEnabled = false;
 	public boolean noBreakDelayEnabled = false;
+	public boolean blockBreakIndicatorEnabled = true;
 
 	public boolean unlockAllRecipes = true;
 	public boolean recipeBookScrollEnabled = true;
@@ -188,6 +189,10 @@ public final class NifteConfig {
 
 				if (!json.has("quickEatEnabled") && json.has("fastEatingEnabled")) {
 					loaded.quickEatEnabled = json.get("fastEatingEnabled").getAsBoolean();
+				}
+
+				if (!json.has("blockBreakIndicatorEnabled")) {
+					loaded.blockBreakIndicatorEnabled = true;
 				}
 
 				if (json.has("handRestockEnabled") && !json.has("blockRestockEnabled") && !json.has("bucketRestockEnabled")) {

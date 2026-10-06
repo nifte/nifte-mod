@@ -414,6 +414,10 @@ public final class NifteConfigScreen {
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.noBreakDelayEnabled = value)
 			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.block_break_indicator", config.blockBreakIndicatorEnabled)
+			.setDefaultValue(true)
+			.setSaveConsumer(value -> config.blockBreakIndicatorEnabled = value)
+			.build());
 	}
 
 	private static void addCraftingCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
