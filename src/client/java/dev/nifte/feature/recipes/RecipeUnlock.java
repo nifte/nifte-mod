@@ -47,6 +47,10 @@ public final class RecipeUnlock {
 		return recipes.values();
 	}
 
+	public static boolean mayPlace(boolean unlocked) {
+		return unlocked || NifteConfig.get().unlockAllRecipes;
+	}
+
 	public static void refreshCollectionsIfNeeded(ClientRecipeBook book) {
 		if (book == null) {
 			return;
