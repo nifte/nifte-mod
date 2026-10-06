@@ -5,11 +5,8 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -23,7 +20,6 @@ import org.jspecify.annotations.Nullable;
 import dev.nifte.config.NifteConfig;
 import dev.nifte.feature.toolprotect.ToolProtectFeature;
 import dev.nifte.hud.ToggleOverlay;
-import dev.nifte.inventory.InventoryClicks;
 
 public final class AutoToolFeature {
 	private AutoToolFeature() {
@@ -56,69 +52,22 @@ public final class AutoToolFeature {
 		Inventory inventory = player.getInventory();
 		int currentSlot = inventory.getSelectedSlot();
 		int slotCount = config.autoToolFromInventory ? Inventory.INVENTORY_SIZE : Inventory.SELECTION_SIZE;
-		AutoToolScore bestScore = score(inventory.getItem(currentSlot), state, minecraft.level);
-		int bestSlot = currentSlot;
-		for (int slot = 0; slot < slotCount; slot++) {
-			if (slot == currentSlot) {
-				continue;
-			}
+		int bestSlot = AutoToolSlots.bestSlot(inventory, currentSlot, slotCount, stack -> score(stack, state, minecraft.level));
+		AutoToolSlots.swap(minecraft, player, bestSlot, currentSlot);
+	}
 
-			AutoToolScore candidate = score(inventory.getItem(slot), state, minecraft.level);
-			if (candidate.isBetterThan(bestScore)) {
-				bestScore = candidate;
-				bestSlot = slot;
-			}
-		}
-
-		if (bestSlot == currentSlot) {
-			return;
-		}
-
-		if (bestSlot < Inventory.SELECTION_SIZE) {
-			inventory.setSelectedSlot(bestSlot);
-			player.connection.send(new ServerboundSetCarriedItemPacket(bestSlot));
-			return;
-		}
-
-		if (player.containerMenu != player.inventoryMenu || !InventoryClicks.cursorEmpty()) {
-			return;
-		}
-
-		int menuSlot = InventoryClicks.playerMenuSlot(minecraft, bestSlot);
-		if (menuSlot >= 0) {
-			InventoryClicks.swapWithHotbar(menuSlot, currentSlot);
-		}
+	public static void selectFor(Minecraft minecraft, Entity target) {
+		AutoToolEntities.selectFor(minecraft, target);
 	}
 
 	private static AutoToolScore score(ItemStack stack, BlockState state, Level level) {
 		ItemStack usable = ToolProtectFeature.shouldBlock(stack) ? ItemStack.EMPTY : stack;
 		boolean canHarvest = !state.requiresCorrectToolForDrops() || usable.isCorrectToolForDrops(state);
 		int enchantmentPriority = enchantmentPriority(usable, state, level);
-		float speed = miningSpeed(usable, state);
-		return new AutoToolScore(canHarvest, enchantmentPriority, speed);
-	}
-
-	private static float miningSpeed(ItemStack stack, BlockState state) {
-		if (stack.isEmpty()) {
-			return 1.0F;
-		}
-
-		float speed = stack.getDestroySpeed(state);
-		if (speed > 1.0F) {
-			speed += miningEfficiency(stack);
-		}
-
-		return speed;
-	}
-
-	private static float miningEfficiency(ItemStack stack) {
-		final float[] total = {0.0F};
-		stack.forEachModifier(EquipmentSlot.MAINHAND, (attribute, modifier) -> {
-			if (attribute.equals(Attributes.MINING_EFFICIENCY) && modifier.operation() == AttributeModifier.Operation.ADD_VALUE) {
-				total[0] += (float) modifier.amount();
-			}
-		});
-		return total[0];
+		boolean preferredTool = AutoToolSpeed.prefersTool(usable, state);
+		float speed = AutoToolSpeed.miningSpeed(usable, state);
+		boolean matchesTool = AutoToolSpeed.matchesMineableTag(usable, state);
+		return new AutoToolScore(canHarvest, enchantmentPriority, preferredTool, speed, matchesTool);
 	}
 
 	private static int enchantmentPriority(ItemStack stack, BlockState state, Level level) {

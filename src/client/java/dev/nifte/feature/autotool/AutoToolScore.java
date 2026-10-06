@@ -3,12 +3,16 @@ package dev.nifte.feature.autotool;
 final class AutoToolScore implements Comparable<AutoToolScore> {
 	private final boolean canHarvest;
 	private final int enchantmentPriority;
+	private final boolean preferredTool;
 	private final float speed;
+	private final boolean matchesTool;
 
-	AutoToolScore(boolean canHarvest, int enchantmentPriority, float speed) {
+	AutoToolScore(boolean canHarvest, int enchantmentPriority, boolean preferredTool, float speed, boolean matchesTool) {
 		this.canHarvest = canHarvest;
 		this.enchantmentPriority = enchantmentPriority;
+		this.preferredTool = preferredTool;
 		this.speed = speed;
+		this.matchesTool = matchesTool;
 	}
 
 	boolean isBetterThan(AutoToolScore other) {
@@ -27,6 +31,16 @@ final class AutoToolScore implements Comparable<AutoToolScore> {
 			return enchantment;
 		}
 
-		return Float.compare(this.speed, other.speed);
+		int preferred = Boolean.compare(this.preferredTool, other.preferredTool);
+		if (preferred != 0) {
+			return preferred;
+		}
+
+		int speed = Float.compare(this.speed, other.speed);
+		if (speed != 0) {
+			return speed;
+		}
+
+		return Boolean.compare(this.matchesTool, other.matchesTool);
 	}
 }

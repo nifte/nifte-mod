@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import dev.nifte.feature.autotool.AutoToolFeature;
 import dev.nifte.feature.autoweapon.AutoWeaponFeature;
 import dev.nifte.feature.fastplace.FastBlockPlacement;
 import dev.nifte.feature.quickuse.QuickUseFeature;
@@ -36,6 +37,7 @@ public abstract class MinecraftMixin {
 			return;
 		}
 
+		AutoToolFeature.selectFor(minecraft, hit.getEntity());
 		AutoWeaponFeature.selectFor(minecraft, hit.getEntity());
 	}
 }

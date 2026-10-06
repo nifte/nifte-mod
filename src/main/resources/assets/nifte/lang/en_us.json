@@ -294,7 +294,7 @@
   "nifte.config.auto_elytra": "Auto elytra swap",
   "nifte.config.auto_elytra.tooltip": "Swap to an elytra when you jump in the air, then restore your chestplate when you land.",
   "nifte.config.auto_tool": "Auto tool swap",
-  "nifte.config.auto_tool.tooltip": "Swap to the best tool for the block you're mining.",
+  "nifte.config.auto_tool.tooltip": "Swap to the best tool when mining blocks or breaking boats and minecarts. Also checks your offhand.",
   "nifte.config.auto_tool.settings": "Tool swap settings",
   "nifte.config.auto_tool.inventory": "Swap tools from inventory",
   "nifte.config.auto_tool.inventory.tooltip": "Search your inventory for a better tool, not just the hotbar.",
