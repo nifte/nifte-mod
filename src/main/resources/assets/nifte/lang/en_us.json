@@ -263,7 +263,7 @@
   "nifte.config.fullbright": "Full Brightness",
   "nifte.config.fullbright.tooltip": "Light the world as if it were fully bright, including caves and night.",
   "nifte.config.item_scroll": "Scroll items in containers",
-  "nifte.config.item_scroll.tooltip": "Scroll over a slot to move items one at a time between your inventory and the container.",
+  "nifte.config.item_scroll.tooltip": "Scroll over a slot to move items one at a time between your inventory and the container. Hold Shift to move the whole stack.",
   "nifte.config.sort": "Sort containers",
   "nifte.config.sort.tooltip": "Press the bound key while hovering a container to sort its items.",
   "nifte.config.container_drag": "Improved item dragging",
