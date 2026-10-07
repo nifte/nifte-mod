@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -14,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.FurnaceResultSlot;
 import net.minecraft.world.inventory.ResultSlot;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemStack;
@@ -100,20 +102,27 @@ public final class ContainerSortFeature {
 		for (int i = 0; i < slots.size(); i++) {
 			Slot destination = slots.get(i);
 			ItemStack destStack = destination.getItem();
-			if (destStack.isEmpty() || destStack.getCount() >= destStack.getMaxStackSize()) {
+			if (destStack.isEmpty() || isBundle(destStack) || destStack.getCount() >= destStack.getMaxStackSize()) {
 				continue;
 			}
 
 			for (int j = i + 1; j < slots.size(); j++) {
 				Slot source = slots.get(j);
 				ItemStack sourceStack = source.getItem();
-				if (sourceStack.isEmpty() || !ItemStack.isSameItemSameComponents(destStack, sourceStack) || !source.mayPickup(player)) {
+				if (sourceStack.isEmpty() || isBundle(sourceStack) || !ItemStack.isSameItemSameComponents(destStack, sourceStack) || !source.mayPickup(player)) {
 					continue;
 				}
 
 				InventoryClicks.pickup(source.index);
+				if (isBundle(InventoryClicks.carried()) || isBundle(destination.getItem())) {
+					if (!InventoryClicks.cursorEmpty() && source.getItem().isEmpty()) {
+						InventoryClicks.pickup(source.index);
+					}
+					continue;
+				}
+
 				InventoryClicks.pickup(destination.index);
-				if (!InventoryClicks.cursorEmpty()) {
+				if (!InventoryClicks.cursorEmpty() && !isBundle(source.getItem())) {
 					InventoryClicks.pickup(source.index);
 				}
 
@@ -135,99 +144,152 @@ public final class ContainerSortFeature {
 			}
 
 			if (best != target) {
-				exchange(slots.get(target), slots.get(best), player);
+				exchange(slots, slots.get(target), slots.get(best), player);
 			}
 		}
 	}
 
-	private static void exchange(Slot first, Slot second, Player player) {
-		if (!bundleBlocksPickupSwap(first.getItem(), second.getItem())) {
+	private static void exchange(List<Slot> slots, Slot first, Slot second, Player player) {
+		if (!containsBundle(slots)) {
 			InventoryClicks.swapSlots(first.index, second.index);
 			return;
 		}
 
-		// Left-clicking a bundle inserts the held stack. Swap through the hotbar instead.
-		if (swapHotbarPair(first, second, player)) {
+		// A left click inserts the held stack into a bundle. Move bundles by placing onto empty slots.
+		if (second.getItem().isEmpty()) {
+			transfer(first, second);
 			return;
 		}
 
-		int scratch = findScratch(player, first, second);
-		if (scratch < 0) {
+		if (first.getItem().isEmpty()) {
+			transfer(second, first);
 			return;
 		}
 
-		InventoryClicks.swapWithHotbar(first.index, scratch);
-		InventoryClicks.swapWithHotbar(second.index, scratch);
-		InventoryClicks.swapWithHotbar(first.index, scratch);
+		Slot parking = findParking(slots, first, second, player);
+		if (parking != null) {
+			moveThroughParking(first, second, parking);
+		}
 	}
 
-	private static boolean bundleBlocksPickupSwap(ItemStack first, ItemStack second) {
-		if (first.isEmpty() || second.isEmpty()) {
-			return false;
-		}
-
-		return first.getItem() instanceof BundleItem || second.getItem() instanceof BundleItem;
-	}
-
-	private static boolean swapHotbarPair(Slot first, Slot second, Player player) {
-		int firstHotbar = hotbarIndex(first);
-		if (firstHotbar >= 0 && first.mayPickup(player) && fitsIn(second, player.getInventory().getItem(firstHotbar), player)) {
-			InventoryClicks.swapWithHotbar(second.index, firstHotbar);
-			return true;
-		}
-
-		int secondHotbar = hotbarIndex(second);
-		if (secondHotbar >= 0 && second.mayPickup(player) && fitsIn(first, player.getInventory().getItem(secondHotbar), player)) {
-			InventoryClicks.swapWithHotbar(first.index, secondHotbar);
-			return true;
+	private static boolean containsBundle(List<Slot> slots) {
+		for (Slot slot : slots) {
+			if (isBundle(slot.getItem())) {
+				return true;
+			}
 		}
 
 		return false;
 	}
 
-	private static int findScratch(Player player, Slot first, Slot second) {
-		int skipFirst = hotbarIndex(first);
-		int skipSecond = hotbarIndex(second);
-		int occupied = -1;
-		for (int index = 0; index < Inventory.SELECTION_SIZE; index++) {
-			if (index == skipFirst || index == skipSecond) {
-				continue;
-			}
-
-			ItemStack stack = player.getInventory().getItem(index);
-			if (!canCycleThrough(first, second, stack, player)) {
-				continue;
-			}
-
-			if (stack.isEmpty()) {
-				return index;
-			}
-
-			if (occupied < 0) {
-				occupied = index;
-			}
+	private static boolean isBundle(ItemStack stack) {
+		if (stack.isEmpty()) {
+			return false;
 		}
 
-		ItemStack offhand = player.getInventory().getItem(Inventory.SLOT_OFFHAND);
-		if (canCycleThrough(first, second, offhand, player)) {
-			if (offhand.isEmpty() || occupied < 0) {
-				return Inventory.SLOT_OFFHAND;
-			}
-		}
-
-		return occupied;
+		return stack.getItem() instanceof BundleItem
+			|| stack.is(ItemTags.BUNDLES)
+			|| stack.has(DataComponents.BUNDLE_CONTENTS);
 	}
 
-	private static boolean canCycleThrough(Slot first, Slot second, ItemStack scratch, Player player) {
-		if (!first.mayPickup(player) || !second.mayPickup(player)) {
+	private static Slot findParking(List<Slot> group, Slot first, Slot second, Player player) {
+		ItemStack moving = first.getItem();
+		if (!first.mayPickup(player) || !second.mayPickup(player) || !fitsIn(first, second.getItem(), player) || !fitsIn(second, moving, player)) {
+			return null;
+		}
+
+		Slot inGroup = emptyParking(group, first, second, moving, player);
+		if (inGroup != null) {
+			return inGroup;
+		}
+
+		Slot playerSlot = emptyPlayerSlot(player, first, second, moving);
+		if (playerSlot != null) {
+			return playerSlot;
+		}
+
+		return emptyParking(player.containerMenu.slots, first, second, moving, player);
+	}
+
+	private static Slot emptyPlayerSlot(Player player, Slot first, Slot second, ItemStack moving) {
+		Minecraft minecraft = Minecraft.getInstance();
+		for (Slot slot : player.containerMenu.slots) {
+			if (slot == first || slot == second || !slot.getItem().isEmpty() || !slot.mayPickup(player) || !fitsIn(slot, moving, player)) {
+				continue;
+			}
+
+			boolean offhand = InventoryClicks.isPlayerInventorySlot(slot, minecraft) && slot.getContainerSlot() == Inventory.SLOT_OFFHAND;
+			if (InventoryClicks.isPlayerMainInventorySlot(slot, minecraft) || offhand) {
+				return slot;
+			}
+		}
+
+		return null;
+	}
+
+	private static Slot emptyParking(List<Slot> slots, Slot first, Slot second, ItemStack moving, Player player) {
+		for (Slot slot : slots) {
+			if (slot == first || slot == second || !isSortable(slot) || !slot.getItem().isEmpty() || !slot.mayPickup(player)) {
+				continue;
+			}
+
+			if (fitsIn(slot, moving, player)) {
+				return slot;
+			}
+		}
+
+		return null;
+	}
+
+	private static void moveThroughParking(Slot first, Slot second, Slot parking) {
+		if (!transfer(first, parking)) {
+			return;
+		}
+
+		if (!transfer(second, first)) {
+			transfer(parking, first);
+			return;
+		}
+
+		if (!transfer(parking, second)) {
+			transfer(first, second);
+			transfer(parking, first);
+		}
+	}
+
+	private static boolean transfer(Slot from, Slot to) {
+		if (!take(from)) {
 			return false;
 		}
 
-		if (!fitsIn(second, first.getItem(), player) || !fitsIn(first, second.getItem(), player)) {
+		if (placeOntoEmpty(to)) {
+			return true;
+		}
+
+		placeOntoEmpty(from);
+		return false;
+	}
+
+	private static boolean take(Slot slot) {
+		if (!InventoryClicks.cursorEmpty() || slot.getItem().isEmpty()) {
 			return false;
 		}
 
-		return scratch.isEmpty() || fitsIn(first, scratch, player);
+		InventoryClicks.pickup(slot.index);
+		return !InventoryClicks.cursorEmpty() && slot.getItem().isEmpty();
+	}
+
+	private static boolean placeOntoEmpty(Slot slot) {
+		if (InventoryClicks.cursorEmpty() || !slot.getItem().isEmpty()) {
+			return false;
+		}
+
+		ItemStack carried = InventoryClicks.carried().copy();
+		InventoryClicks.pickup(slot.index);
+		ItemStack placed = slot.getItem();
+		return InventoryClicks.cursorEmpty()
+			&& placed.getCount() == carried.getCount()
+			&& ItemStack.isSameItemSameComponents(placed, carried);
 	}
 
 	private static boolean fitsIn(Slot slot, ItemStack stack, Player player) {
@@ -235,15 +297,5 @@ public final class ContainerSortFeature {
 			&& slot.mayPickup(player)
 			&& slot.mayPlace(stack)
 			&& stack.getCount() <= slot.getMaxStackSize(stack);
-	}
-
-	private static int hotbarIndex(Slot slot) {
-		Minecraft minecraft = Minecraft.getInstance();
-		if (!InventoryClicks.isPlayerInventorySlot(slot, minecraft)) {
-			return -1;
-		}
-
-		int index = slot.getContainerSlot();
-		return Inventory.isHotbarSlot(index) ? index : -1;
 	}
 }
