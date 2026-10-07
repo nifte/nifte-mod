@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import dev.nifte.feature.drag.ContainerDragFeature;
 import dev.nifte.feature.dropconfirm.DropConfirmFeature;
+import dev.nifte.feature.halfstack.HalfStackMoveFeature;
 import dev.nifte.feature.itemscroll.ItemScrollFeature;
 import dev.nifte.feature.recipes.RecipeFeatures;
 import dev.nifte.feature.sort.ContainerSortFeature;
@@ -77,7 +78,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 	)
 	private void nifte$dropConfirm(Slot slot, int slotId, int buttonNum, ContainerInput input, CallbackInfo ci) {
 		AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) (Object) this;
-		if (DropConfirmFeature.handleSlotClick(screen.getMenu(), slot, slotId, input)) {
+		if (HalfStackMoveFeature.handleSlotClick(slot, buttonNum, input) || DropConfirmFeature.handleSlotClick(screen.getMenu(), slot, slotId, input)) {
 			ci.cancel();
 		}
 	}

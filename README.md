@@ -40,6 +40,7 @@ This mod is **client only**. It does not need to be installed on servers.
 - Move items with scroll wheel
 - Inventory/chest sorting
 - Improved item dragging
+- Shift-right-click moves half a stack
 - Drop confirmation for valuable items
 - Move around while containers are open
 - Quick eat (bind a key to eat food)

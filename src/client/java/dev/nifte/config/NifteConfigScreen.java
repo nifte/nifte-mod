@@ -270,6 +270,10 @@ public final class NifteConfigScreen {
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.containerDragEnabled = value)
 			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.half_stack_move", config.halfStackMoveEnabled)
+			.setDefaultValue(true)
+			.setSaveConsumer(value -> config.halfStackMoveEnabled = value)
+			.build());
 		addEntry(category, entries.startEnumSelector(Component.translatable("nifte.config.drop_confirm"), DropConfirmMode.class, config.dropConfirmMode)
 			.setDefaultValue(DropConfirmMode.DISABLED)
 			.setEnumNameProvider(mode -> ((DropConfirmMode) mode).optionLabel())

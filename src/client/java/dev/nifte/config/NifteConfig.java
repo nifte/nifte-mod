@@ -81,6 +81,7 @@ public final class NifteConfig {
 	public boolean itemScrollEnabled = false;
 	public boolean containerSortEnabled = false;
 	public boolean containerDragEnabled = false;
+	public boolean halfStackMoveEnabled = true;
 
 	public boolean autoTotemEnabled = true;
 	public boolean autoElytraEnabled = false;
@@ -193,6 +194,10 @@ public final class NifteConfig {
 
 				if (!json.has("blockBreakIndicatorEnabled")) {
 					loaded.blockBreakIndicatorEnabled = true;
+				}
+
+				if (!json.has("halfStackMoveEnabled")) {
+					loaded.halfStackMoveEnabled = true;
 				}
 
 				if (json.has("handRestockEnabled") && !json.has("blockRestockEnabled") && !json.has("bucketRestockEnabled")) {
