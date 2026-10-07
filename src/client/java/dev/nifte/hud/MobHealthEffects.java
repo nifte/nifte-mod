@@ -31,6 +31,10 @@ final class MobHealthEffects {
 			}
 		}
 
+		if (effects.isEmpty()) {
+			return MobEffectParticles.visible(entity);
+		}
+
 		effects.sort(Comparator.reverseOrder());
 		return effects;
 	}
