@@ -1,7 +1,5 @@
 package dev.nifte.feature.halfstack;
 
-import com.mojang.blaze3d.platform.InputConstants;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
@@ -14,6 +12,9 @@ import dev.nifte.config.NifteConfig;
 import dev.nifte.inventory.InventoryClicks;
 
 public final class HalfStackMoveFeature {
+	// slotClicked receives the container button, not the mouse button. Right-click is remapped from mouse button 3 to this.
+	private static final int SECONDARY_CLICK = 1;
+
 	private HalfStackMoveFeature() {
 	}
 
@@ -36,7 +37,7 @@ public final class HalfStackMoveFeature {
 	}
 
 	private static boolean canMoveHalf(Slot slot, int button, ContainerInput input) {
-		if (!NifteConfig.get().halfStackMoveEnabled || input != ContainerInput.QUICK_MOVE || button != InputConstants.MOUSE_BUTTON_RIGHT) {
+		if (!NifteConfig.get().halfStackMoveEnabled || input != ContainerInput.QUICK_MOVE || button != SECONDARY_CLICK) {
 			return false;
 		}
 
