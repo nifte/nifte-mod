@@ -69,7 +69,6 @@ public final class NifteConfigScreen {
 
 	private static void addHudCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
 		ConfigCategory category = builder.getOrCreateCategory(Component.translatable("nifte.config.hud"));
-		addEntry(category, crosshairScale(entries, config));
 		addEntry(category, booleanToggle(entries, "nifte.config.fps", config.fpsEnabled)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.fpsEnabled = value)
@@ -156,6 +155,8 @@ public final class NifteConfigScreen {
 			"nifte.config.compass",
 			scale(entries, "nifte.config.compass.scale", config.compassScale, value -> config.compassScale = value)
 		);
+
+		addEntry(category, crosshairScale(entries, config));
 	}
 
 	private static void addCameraCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {

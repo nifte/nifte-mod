@@ -13,39 +13,40 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import dev.nifte.config.CrosshairScaleSlider;
+import dev.nifte.config.IntegerSliderSnap;
+import dev.nifte.config.NifteConfigScreen;
 
 @Mixin(targets = "me.shedaniel.clothconfig2.gui.entries.IntegerSliderEntry$Slider", remap = false)
-public abstract class CrosshairScaleSliderMixin {
+public abstract class IntegerSliderSnapMixin {
 	@Shadow
 	@Final
 	private IntegerSliderEntry this$0;
 
-	@Shadow(remap = true)
-	protected double value;
+	@Shadow
+	public abstract double getProgress();
 
-	@Shadow(remap = true)
-	protected boolean canChangeValue;
+	@Shadow
+	public abstract void setProgress(double progress);
 
 	@Shadow(remap = true)
 	protected abstract void setValue(double newValue);
 
 	@Inject(method = "applyValue", at = @At("HEAD"), cancellable = true, remap = false)
-	private void nifte$snapCrosshairScale(CallbackInfo ci) {
-		if (!CrosshairScaleSlider.applies(this.this$0.getFieldName())) {
+	private void nifte$snapIntegerSlider(CallbackInfo ci) {
+		if (!nifte$snaps()) {
 			return;
 		}
 
 		IntegerSliderEntryAccessor entry = (IntegerSliderEntryAccessor) this.this$0;
-		int snapped = CrosshairScaleSlider.snap(entry.nifte$minimum(), entry.nifte$maximum(), this.value);
+		int snapped = IntegerSliderSnap.snap(entry.nifte$minimum(), entry.nifte$maximum(), this.getProgress());
 		entry.nifte$value().set(snapped);
-		this.value = CrosshairScaleSlider.progress(entry.nifte$minimum(), entry.nifte$maximum(), snapped);
+		this.setProgress(IntegerSliderSnap.progress(entry.nifte$minimum(), entry.nifte$maximum(), snapped));
 		ci.cancel();
 	}
 
 	@Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true, remap = true)
-	private void nifte$stepCrosshairScale(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
-		if (!CrosshairScaleSlider.applies(this.this$0.getFieldName()) || !this.this$0.isEditable() || !this.canChangeValue) {
+	private void nifte$stepIntegerSlider(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
+		if (!nifte$snaps() || !this.this$0.isEditable() || !((AbstractSliderButtonAccessor) (Object) this).nifte$canChangeValue()) {
 			return;
 		}
 
@@ -57,7 +58,11 @@ public abstract class CrosshairScaleSliderMixin {
 
 		IntegerSliderEntryAccessor entry = (IntegerSliderEntryAccessor) this.this$0;
 		int next = Mth.clamp(this.this$0.getValue() + (right ? 1 : -1), entry.nifte$minimum(), entry.nifte$maximum());
-		this.setValue(CrosshairScaleSlider.progress(entry.nifte$minimum(), entry.nifte$maximum(), next));
+		this.setValue(IntegerSliderSnap.progress(entry.nifte$minimum(), entry.nifte$maximum(), next));
 		cir.setReturnValue(true);
+	}
+
+	private boolean nifte$snaps() {
+		return NifteConfigScreen.isNifteScreen(this.this$0.getConfigScreen());
 	}
 }
