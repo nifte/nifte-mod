@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import dev.nifte.feature.food.FoodHungerHud;
-import dev.nifte.feature.mining.BlockBreakIndicator;
+import dev.nifte.feature.progress.ProgressBar;
 
 @Mixin(Hud.class)
 public abstract class HudMixin {
@@ -40,8 +40,8 @@ public abstract class HudMixin {
 			target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"
 		)
 	)
-	private float nifte$miningProgress(LocalPlayer player, float adjustTicks) {
-		return BlockBreakIndicator.attackStrength(player, adjustTicks);
+	private float nifte$progressBar(LocalPlayer player, float adjustTicks) {
+		return ProgressBar.attackStrength(player, adjustTicks);
 	}
 
 	@Inject(method = "extractSelectedItemName", at = @At("HEAD"), cancellable = true)

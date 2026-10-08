@@ -69,7 +69,6 @@ This mod is **client only**. It does not need to be installed on servers.
 - Block restocking
 - Bucket restocking
 - Remove mining delay
-- Mining progress on the attack indicator
 
 ### Crafting
 
@@ -85,6 +84,7 @@ This mod is **client only**. It does not need to be installed on servers.
 - Hunger restored shown on food names and tooltips
 - Shulker box contents in tooltips
 - Hide advancement and recipe notifications
+- Progress bar for mining, eating, drawing a bow or crossbow, and item cooldowns
 
 ### Particles
 

@@ -345,6 +345,10 @@ public final class NifteConfigScreen {
 			booleanToggle(entries, "nifte.config.auto_tool.inventory", config.autoToolFromInventory)
 				.setDefaultValue(false)
 				.setSaveConsumer(value -> config.autoToolFromInventory = value)
+				.build(),
+			booleanToggle(entries, "nifte.config.auto_tool.switch_back", config.autoToolSwitchBack)
+				.setDefaultValue(false)
+				.setSaveConsumer(value -> config.autoToolSwitchBack = value)
 				.build()
 		);
 		addEntry(category, entries.startEnumSelector(Component.translatable("nifte.config.tool_protect"), ToolProtectMode.class, config.toolProtectMode)
@@ -418,10 +422,6 @@ public final class NifteConfigScreen {
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.noBreakDelayEnabled = value)
 			.build());
-		addEntry(category, booleanToggle(entries, "nifte.config.block_break_indicator", config.blockBreakIndicatorEnabled)
-			.setDefaultValue(true)
-			.setSaveConsumer(value -> config.blockBreakIndicatorEnabled = value)
-			.build());
 	}
 
 	private static void addCraftingCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
@@ -441,6 +441,10 @@ public final class NifteConfigScreen {
 		addEntry(category, booleanToggle(entries, "nifte.config.instant_craft", config.instantCraftEnabled)
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.instantCraftEnabled = value)
+			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.instant_craft.hotbar", config.instantCraftHotbar)
+			.setDefaultValue(true)
+			.setSaveConsumer(value -> config.instantCraftHotbar = value)
 			.build());
 	}
 
@@ -470,6 +474,31 @@ public final class NifteConfigScreen {
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.disableRecipeToasts = value)
 			.build());
+		addEntry(category, booleanToggle(entries, "nifte.config.progress_bar", config.progressBarEnabled)
+			.setDefaultValue(true)
+			.setSaveConsumer(value -> config.progressBarEnabled = value)
+			.build());
+		addSettings(
+			category,
+			entries,
+			"nifte.config.progress_bar",
+			booleanToggle(entries, "nifte.config.progress_bar.mining", config.progressBarMining)
+				.setDefaultValue(true)
+				.setSaveConsumer(value -> config.progressBarMining = value)
+				.build(),
+			booleanToggle(entries, "nifte.config.progress_bar.eating", config.progressBarEating)
+				.setDefaultValue(true)
+				.setSaveConsumer(value -> config.progressBarEating = value)
+				.build(),
+			booleanToggle(entries, "nifte.config.progress_bar.drawing", config.progressBarDrawing)
+				.setDefaultValue(true)
+				.setSaveConsumer(value -> config.progressBarDrawing = value)
+				.build(),
+			booleanToggle(entries, "nifte.config.progress_bar.cooldown", config.progressBarCooldowns)
+				.setDefaultValue(true)
+				.setSaveConsumer(value -> config.progressBarCooldowns = value)
+				.build()
+		);
 	}
 
 	private static void addParticlesCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {

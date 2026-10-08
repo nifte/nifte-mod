@@ -87,6 +87,7 @@ public final class NifteConfig {
 	public boolean autoElytraEnabled = false;
 	public boolean autoToolEnabled = false;
 	public boolean autoToolFromInventory = false;
+	public boolean autoToolSwitchBack = false;
 	public boolean autoWeaponEnabled = false;
 	public boolean autoWeaponFromInventory = false;
 	public ToolProtectMode toolProtectMode = ToolProtectMode.DISABLED;
@@ -96,12 +97,18 @@ public final class NifteConfig {
 	public boolean bucketRestockEnabled = false;
 	public boolean consumableRestockEnabled = false;
 	public boolean noBreakDelayEnabled = false;
-	public boolean blockBreakIndicatorEnabled = true;
+
+	public boolean progressBarEnabled = true;
+	public boolean progressBarMining = true;
+	public boolean progressBarEating = true;
+	public boolean progressBarDrawing = true;
+	public boolean progressBarCooldowns = true;
 
 	public boolean unlockAllRecipes = true;
 	public boolean recipeBookScrollEnabled = true;
 	public boolean keepCraftingCentered = true;
 	public boolean instantCraftEnabled = false;
+	public boolean instantCraftHotbar = true;
 
 	public boolean disableAdvancementToasts = false;
 	public boolean disableRecipeToasts = false;
@@ -192,12 +199,33 @@ public final class NifteConfig {
 					loaded.quickEatEnabled = json.get("fastEatingEnabled").getAsBoolean();
 				}
 
-				if (!json.has("blockBreakIndicatorEnabled")) {
-					loaded.blockBreakIndicatorEnabled = true;
+				if (!json.has("progressBarEnabled")) {
+					loaded.progressBarEnabled = true;
+				}
+
+				if (!json.has("progressBarMining")) {
+					loaded.progressBarMining = !json.has("blockBreakIndicatorEnabled")
+						|| json.get("blockBreakIndicatorEnabled").getAsBoolean();
+				}
+
+				if (!json.has("progressBarEating")) {
+					loaded.progressBarEating = true;
+				}
+
+				if (!json.has("progressBarDrawing")) {
+					loaded.progressBarDrawing = true;
+				}
+
+				if (!json.has("progressBarCooldowns")) {
+					loaded.progressBarCooldowns = true;
 				}
 
 				if (!json.has("halfStackMoveEnabled")) {
 					loaded.halfStackMoveEnabled = true;
+				}
+
+				if (!json.has("instantCraftHotbar")) {
+					loaded.instantCraftHotbar = true;
 				}
 
 				if (json.has("handRestockEnabled") && !json.has("blockRestockEnabled") && !json.has("bucketRestockEnabled")) {
