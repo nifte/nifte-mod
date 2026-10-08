@@ -89,20 +89,53 @@ public final class InventoryClicks {
 	}
 
 	public static void depositCarriedIntoPlayerInventory() {
+		depositCarried(false);
+	}
+
+	public static void depositCarriedPreferringEmptyHotbar() {
+		Minecraft minecraft = Minecraft.getInstance();
+		if (minecraft.player == null || cursorEmpty()) {
+			return;
+		}
+
+		if (hasEmptyHotbarSlot(minecraft.player.containerMenu, minecraft)) {
+			depositCarried(true);
+			return;
+		}
+
+		depositCarried(false);
+	}
+
+	private static void depositCarried(boolean hotbarFirst) {
 		Minecraft minecraft = Minecraft.getInstance();
 		if (minecraft.player == null || cursorEmpty()) {
 			return;
 		}
 
 		AbstractContainerMenu menu = minecraft.player.containerMenu;
-		for (Slot slot : menu.slots) {
-			if (!isPlayerMainInventorySlot(slot, minecraft)) {
-				continue;
+		if (hotbarFirst) {
+			transferCarried(menu, minecraft, true, false);
+			if (cursorEmpty()) {
+				return;
 			}
 
-			ItemStack inSlot = slot.getItem();
-			ItemStack carried = carried();
-			if (inSlot.isEmpty() || !ItemStack.isSameItemSameComponents(inSlot, carried) || inSlot.getCount() >= inSlot.getMaxStackSize()) {
+			transferCarried(menu, minecraft, true, true);
+			if (cursorEmpty()) {
+				return;
+			}
+		}
+
+		transferCarried(menu, minecraft, false, false);
+		if (cursorEmpty()) {
+			return;
+		}
+
+		transferCarried(menu, minecraft, false, true);
+	}
+
+	private static void transferCarried(AbstractContainerMenu menu, Minecraft minecraft, boolean hotbarOnly, boolean emptySlots) {
+		for (Slot slot : menu.slots) {
+			if (!isDepositSlot(slot, minecraft, hotbarOnly) || !acceptsCarried(slot, emptySlots)) {
 				continue;
 			}
 
@@ -111,16 +144,35 @@ public final class InventoryClicks {
 				return;
 			}
 		}
+	}
 
+	private static boolean acceptsCarried(Slot slot, boolean emptySlots) {
+		ItemStack inSlot = slot.getItem();
+		if (emptySlots) {
+			return inSlot.isEmpty();
+		}
+
+		ItemStack carried = carried();
+		return !inSlot.isEmpty()
+			&& ItemStack.isSameItemSameComponents(inSlot, carried)
+			&& inSlot.getCount() < inSlot.getMaxStackSize();
+	}
+
+	private static boolean isDepositSlot(Slot slot, Minecraft minecraft, boolean hotbarOnly) {
+		if (!isPlayerMainInventorySlot(slot, minecraft)) {
+			return false;
+		}
+
+		return !hotbarOnly || Inventory.isHotbarSlot(slot.getContainerSlot());
+	}
+
+	private static boolean hasEmptyHotbarSlot(AbstractContainerMenu menu, Minecraft minecraft) {
 		for (Slot slot : menu.slots) {
-			if (!isPlayerMainInventorySlot(slot, minecraft) || !slot.getItem().isEmpty()) {
-				continue;
-			}
-
-			pickup(slot.index);
-			if (cursorEmpty()) {
-				return;
+			if (isDepositSlot(slot, minecraft, true) && slot.getItem().isEmpty()) {
+				return true;
 			}
 		}
+
+		return false;
 	}
 }
