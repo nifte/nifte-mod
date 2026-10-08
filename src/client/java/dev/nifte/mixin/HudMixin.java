@@ -58,41 +58,6 @@ public abstract class HudMixin {
 	}
 
 	@Redirect(
-		method = "extractCrosshair",
-		at = @At(
-			value = "INVOKE",
-			target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIIIIII)V"
-		)
-	)
-	private void nifte$scaleCrosshairPartial(
-		GuiGraphicsExtractor graphics,
-		RenderPipeline pipeline,
-		Identifier sprite,
-		int spriteWidth,
-		int spriteHeight,
-		int textureX,
-		int textureY,
-		int x,
-		int y,
-		int width,
-		int height
-	) {
-		CrosshairHud.blit(
-			graphics,
-			pipeline,
-			sprite,
-			spriteWidth,
-			spriteHeight,
-			textureX,
-			textureY,
-			x,
-			y,
-			width,
-			height
-		);
-	}
-
-	@Redirect(
 		method = {"extractCrosshair", "extractItemHotbar"},
 		at = @At(
 			value = "INVOKE",
