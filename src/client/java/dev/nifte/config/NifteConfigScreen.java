@@ -69,6 +69,7 @@ public final class NifteConfigScreen {
 
 	private static void addHudCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
 		ConfigCategory category = builder.getOrCreateCategory(Component.translatable("nifte.config.hud"));
+		addEntry(category, crosshairScale(entries, config));
 		addEntry(category, booleanToggle(entries, "nifte.config.fps", config.fpsEnabled)
 			.setDefaultValue(true)
 			.setSaveConsumer(value -> config.fpsEnabled = value)
@@ -564,6 +565,29 @@ public final class NifteConfigScreen {
 			.setTooltip(tooltip(key))
 			.setSaveConsumer(saver)
 			.build();
+	}
+
+	private static AbstractConfigListEntry<?> crosshairScale(ConfigEntryBuilder entries, NifteConfig config) {
+		int scale = Mth.clamp(config.crosshairScale, NifteConfig.CROSSHAIR_SCALE_MATCH_GUI, NifteConfig.CROSSHAIR_SCALE_MAX);
+		return entries.startIntSlider(
+			Component.translatable("nifte.config.crosshair.scale"),
+			scale,
+			NifteConfig.CROSSHAIR_SCALE_MATCH_GUI,
+			NifteConfig.CROSSHAIR_SCALE_MAX
+		)
+			.setDefaultValue(NifteConfig.CROSSHAIR_SCALE_MATCH_GUI)
+			.setTextGetter(NifteConfigScreen::crosshairScaleLabel)
+			.setTooltip(tooltip("nifte.config.crosshair.scale"))
+			.setSaveConsumer(value -> config.crosshairScale = value)
+			.build();
+	}
+
+	private static Component crosshairScaleLabel(int scale) {
+		if (scale <= NifteConfig.CROSSHAIR_SCALE_MATCH_GUI) {
+			return Component.translatable("nifte.config.crosshair.scale.gui");
+		}
+
+		return Component.translatable("nifte.config.hud.scale.value", scale);
 	}
 
 	private static AbstractConfigListEntry<?> scale(

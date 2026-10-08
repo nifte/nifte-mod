@@ -163,6 +163,9 @@
   "nifte.config.particles.tooltip.white_smoke": "Pale smoke from dried ghasts and similar sources.",
   "nifte.config.particles.tooltip.witch": "Purple spell particles from witches.",
 
+  "nifte.config.crosshair.scale": "Crosshair scale",
+  "nifte.config.crosshair.scale.tooltip": "How large the crosshair is. GUI scale follows the interface. 1x, 2x, 3x, and so on stay that size when the GUI scale changes.",
+  "nifte.config.crosshair.scale.gui": "GUI scale",
   "nifte.config.fps": "FPS indicator",
   "nifte.config.fps.tooltip": "Show your current frames per second on the HUD.",
   "nifte.config.fps.settings": "FPS settings",

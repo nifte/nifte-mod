@@ -16,6 +16,7 @@ This mod is **client only**. It does not need to be installed on servers.
 
 ### HUD
 
+- Crosshair scale
 - FPS counter
 - Armor durability
 - Tool/weapon durability

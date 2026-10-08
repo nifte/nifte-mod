@@ -24,6 +24,10 @@ public final class NifteConfig {
 	private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("nifte.json");
 	private static NifteConfig instance = new NifteConfig();
 
+	public static final int CROSSHAIR_SCALE_MATCH_GUI = 0;
+	public static final int CROSSHAIR_SCALE_MAX = 10;
+	public int crosshairScale = CROSSHAIR_SCALE_MATCH_GUI;
+
 	public boolean fpsEnabled = true;
 	public HudAnchor fpsAnchor = HudAnchor.TOP_LEFT;
 	public int fpsOffsetX = 2;
@@ -234,6 +238,7 @@ public final class NifteConfig {
 					loaded.bucketRestockEnabled = enabled;
 				}
 
+				loaded.crosshairScale = Mth.clamp(loaded.crosshairScale, CROSSHAIR_SCALE_MATCH_GUI, CROSSHAIR_SCALE_MAX);
 				loaded.fireOverlayOffset = Mth.clamp(loaded.fireOverlayOffset, 0.0F, 0.6F);
 				loaded.shieldOffset = Mth.clamp(loaded.shieldOffset, 0.0F, 0.8F);
 

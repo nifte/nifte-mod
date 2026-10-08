@@ -1,10 +1,13 @@
 package dev.nifte.mixin;
 
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.Hud;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import org.spongepowered.asm.mixin.Final;
@@ -17,6 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import dev.nifte.feature.food.FoodHungerHud;
 import dev.nifte.feature.progress.ProgressBar;
+import dev.nifte.hud.CrosshairHud;
 
 @Mixin(Hud.class)
 public abstract class HudMixin {
@@ -32,6 +36,61 @@ public abstract class HudMixin {
 
 	@Shadow
 	public abstract Font getFont();
+
+	@Redirect(
+		method = "extractCrosshair",
+		at = @At(
+			value = "INVOKE",
+			target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V"
+		),
+		require = 3
+	)
+	private void nifte$scaleCrosshairSprite(
+		GuiGraphicsExtractor graphics,
+		RenderPipeline pipeline,
+		Identifier sprite,
+		int x,
+		int y,
+		int width,
+		int height
+	) {
+		CrosshairHud.blit(graphics, pipeline, sprite, x, y, width, height);
+	}
+
+	@Redirect(
+		method = "extractCrosshair",
+		at = @At(
+			value = "INVOKE",
+			target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIIIIII)V"
+		)
+	)
+	private void nifte$scaleCrosshairPartial(
+		GuiGraphicsExtractor graphics,
+		RenderPipeline pipeline,
+		Identifier sprite,
+		int spriteWidth,
+		int spriteHeight,
+		int textureX,
+		int textureY,
+		int x,
+		int y,
+		int width,
+		int height
+	) {
+		CrosshairHud.blit(
+			graphics,
+			pipeline,
+			sprite,
+			spriteWidth,
+			spriteHeight,
+			textureX,
+			textureY,
+			x,
+			y,
+			width,
+			height
+		);
+	}
 
 	@Redirect(
 		method = {"extractCrosshair", "extractItemHotbar"},
