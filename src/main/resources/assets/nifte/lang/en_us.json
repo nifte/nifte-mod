@@ -334,8 +334,6 @@
   "nifte.config.recipe_centered.tooltip": "Don't shift the inventory to the side when the recipe book is open.",
   "nifte.config.instant_craft": "Instant crafting from recipe book",
   "nifte.config.instant_craft.tooltip": "Craft items immediately when you click them in the recipe book.",
-  "nifte.config.instant_craft.hotbar": "Craft into hotbar",
-  "nifte.config.instant_craft.hotbar.tooltip": "Put one-click recipe crafts in an empty hotbar slot before the rest of your inventory.",
   "nifte.config.toasts.advancement": "Hide advancements",
   "nifte.config.toasts.advancement.tooltip": "Hide the popup that appears when you earn an advancement.",
   "nifte.config.toasts.recipe": "Hide recipe unlocks",

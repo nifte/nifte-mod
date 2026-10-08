@@ -112,7 +112,6 @@ public final class NifteConfig {
 	public boolean recipeBookScrollEnabled = true;
 	public boolean keepCraftingCentered = true;
 	public boolean instantCraftEnabled = false;
-	public boolean instantCraftHotbar = true;
 
 	public boolean disableAdvancementToasts = false;
 	public boolean disableRecipeToasts = false;
@@ -226,10 +225,6 @@ public final class NifteConfig {
 
 				if (!json.has("halfStackMoveEnabled")) {
 					loaded.halfStackMoveEnabled = true;
-				}
-
-				if (!json.has("instantCraftHotbar")) {
-					loaded.instantCraftHotbar = true;
 				}
 
 				if (json.has("handRestockEnabled") && !json.has("blockRestockEnabled") && !json.has("bucketRestockEnabled")) {

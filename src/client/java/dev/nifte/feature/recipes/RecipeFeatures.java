@@ -106,11 +106,7 @@ public final class RecipeFeatures {
 			InventoryClicks.quickMove(result.index);
 		} else {
 			InventoryClicks.pickup(result.index);
-			if (NifteConfig.get().instantCraftHotbar) {
-				InventoryClicks.depositCarriedPreferringEmptyHotbar();
-			} else {
-				InventoryClicks.depositCarriedIntoPlayerInventory();
-			}
+			InventoryClicks.depositCarriedPreferringEmptyHotbar();
 		}
 
 		clearInstantCraft();

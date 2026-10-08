@@ -443,10 +443,6 @@ public final class NifteConfigScreen {
 			.setDefaultValue(false)
 			.setSaveConsumer(value -> config.instantCraftEnabled = value)
 			.build());
-		addEntry(category, booleanToggle(entries, "nifte.config.instant_craft.hotbar", config.instantCraftHotbar)
-			.setDefaultValue(true)
-			.setSaveConsumer(value -> config.instantCraftHotbar = value)
-			.build());
 	}
 
 	private static void addUiCategory(ConfigBuilder builder, ConfigEntryBuilder entries, NifteConfig config) {
