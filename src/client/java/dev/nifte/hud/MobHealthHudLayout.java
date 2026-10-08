@@ -12,10 +12,8 @@ final class MobHealthHudLayout {
 	static final int HEART_STEP = 8;
 	static final int HEARTS_PER_ROW = 10;
 	static final int ARMOR_ROW = 10;
-	static final int EFFECT_FRAME = 24;
-	static final int EFFECT_ICON = 18;
-	static final int EFFECT_ICON_INSET = 3;
-	static final int EFFECT_GAP = 1;
+	static final int EFFECT_ICON = 12;
+	static final int EFFECT_GAP = 2;
 
 	private MobHealthHudLayout() {
 	}
@@ -70,7 +68,7 @@ final class MobHealthHudLayout {
 	}
 
 	static int iconsPerRow(int width) {
-		return Math.max(1, (width + EFFECT_GAP) / (EFFECT_FRAME + EFFECT_GAP));
+		return Math.max(1, (width + EFFECT_GAP) / (EFFECT_ICON + EFFECT_GAP));
 	}
 
 	static int effectRows(int effectCount, int width) {
@@ -86,7 +84,7 @@ final class MobHealthHudLayout {
 			return 0;
 		}
 
-		return rows * EFFECT_FRAME + (rows - 1) * EFFECT_GAP;
+		return rows * EFFECT_ICON + (rows - 1) * EFFECT_GAP;
 	}
 
 	static int extrasHeight(int effectRows, int statLines, int lineHeight) {

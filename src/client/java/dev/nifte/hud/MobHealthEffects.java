@@ -9,15 +9,12 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.Hud;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 
 import org.jspecify.annotations.Nullable;
 
 final class MobHealthEffects {
-	private static final Identifier BACKGROUND = Identifier.withDefaultNamespace("hud/effect_background");
-	private static final Identifier BACKGROUND_AMBIENT = Identifier.withDefaultNamespace("hud/effect_background_ambient");
 	private static final int TEXT_COLOR = 0xFFFFFFFF;
 
 	private MobHealthEffects() {
@@ -41,7 +38,7 @@ final class MobHealthEffects {
 
 	static void draw(GuiGraphicsExtractor graphics, Font font, List<MobEffectInstance> effects, int x, int y, int width) {
 		int perRow = MobHealthHudLayout.iconsPerRow(width);
-		int step = MobHealthHudLayout.EFFECT_FRAME + MobHealthHudLayout.EFFECT_GAP;
+		int step = MobHealthHudLayout.EFFECT_ICON + MobHealthHudLayout.EFFECT_GAP;
 		for (int index = 0; index < effects.size(); index++) {
 			MobEffectInstance effect = effects.get(index);
 			int column = index % perRow;
@@ -53,17 +50,9 @@ final class MobHealthEffects {
 	private static void icon(GuiGraphicsExtractor graphics, Font font, MobEffectInstance effect, int x, int y) {
 		graphics.blitSprite(
 			RenderPipelines.GUI_TEXTURED,
-			effect.isAmbient() ? BACKGROUND_AMBIENT : BACKGROUND,
+			Hud.getMobEffectSprite(effect.getEffect()),
 			x,
 			y,
-			MobHealthHudLayout.EFFECT_FRAME,
-			MobHealthHudLayout.EFFECT_FRAME
-		);
-		graphics.blitSprite(
-			RenderPipelines.GUI_TEXTURED,
-			Hud.getMobEffectSprite(effect.getEffect()),
-			x + MobHealthHudLayout.EFFECT_ICON_INSET,
-			y + MobHealthHudLayout.EFFECT_ICON_INSET,
 			MobHealthHudLayout.EFFECT_ICON,
 			MobHealthHudLayout.EFFECT_ICON
 		);
@@ -76,10 +65,10 @@ final class MobHealthEffects {
 		}
 
 		int textWidth = font.width(level);
-		float scale = Math.min(1.0F, (MobHealthHudLayout.EFFECT_FRAME - 2) / (float) Math.max(textWidth, 1));
+		float scale = Math.min(1.0F, (MobHealthHudLayout.EFFECT_ICON - 2) / (float) Math.max(textWidth, 1));
 		int drawWidth = Math.round(textWidth * scale);
-		int textX = x + (MobHealthHudLayout.EFFECT_FRAME - drawWidth) / 2;
-		int textY = y + MobHealthHudLayout.EFFECT_FRAME - Math.round(font.lineHeight * scale);
+		int textX = x + (MobHealthHudLayout.EFFECT_ICON - drawWidth) / 2;
+		int textY = y + MobHealthHudLayout.EFFECT_ICON - Math.round(font.lineHeight * scale);
 		graphics.pose().pushMatrix();
 		graphics.pose().translate(textX, textY);
 		graphics.pose().scale(scale, scale);
