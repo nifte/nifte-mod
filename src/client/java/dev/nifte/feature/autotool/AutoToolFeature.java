@@ -25,6 +25,14 @@ public final class AutoToolFeature {
 	private AutoToolFeature() {
 	}
 
+	public static void register() {
+		AutoToolSwitchBack.register();
+	}
+
+	public static void markMining() {
+		AutoToolSwitchBack.markMining();
+	}
+
 	public static void toggle() {
 		NifteConfig config = NifteConfig.get();
 		config.autoToolEnabled = !config.autoToolEnabled;
@@ -53,7 +61,17 @@ public final class AutoToolFeature {
 		int currentSlot = inventory.getSelectedSlot();
 		int slotCount = config.autoToolFromInventory ? Inventory.INVENTORY_SIZE : Inventory.SELECTION_SIZE;
 		int bestSlot = AutoToolSlots.bestSlot(inventory, currentSlot, slotCount, stack -> score(stack, state, minecraft.level));
-		AutoToolSlots.swap(minecraft, player, bestSlot, currentSlot);
+		boolean fromInventory = bestSlot >= Inventory.SELECTION_SIZE;
+		ItemStack tool = ItemStack.EMPTY;
+		ItemStack displaced = ItemStack.EMPTY;
+		if (config.autoToolSwitchBack && fromInventory && bestSlot != currentSlot) {
+			tool = inventory.getItem(bestSlot).copy();
+			displaced = inventory.getItem(currentSlot).copy();
+		}
+
+		if (AutoToolSlots.swap(minecraft, player, bestSlot, currentSlot) && config.autoToolSwitchBack) {
+			AutoToolSwitchBack.record(currentSlot, bestSlot, tool, displaced);
+		}
 	}
 
 	public static void selectFor(Minecraft minecraft, Entity target) {

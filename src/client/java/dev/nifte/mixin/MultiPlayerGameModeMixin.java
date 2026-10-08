@@ -106,6 +106,7 @@ public abstract class MultiPlayerGameModeMixin {
 	@Inject(method = "startDestroyBlock", at = @At("HEAD"), cancellable = true)
 	private void nifte$beforeDestroyBlock(BlockPos pos, Direction direction, CallbackInfoReturnable<Boolean> cir) {
 		AutoToolFeature.selectFor(this.minecraft, pos);
+		AutoToolFeature.markMining();
 		if (ToolProtectFeature.blockMainHand(this.minecraft)) {
 			cir.setReturnValue(false);
 		}
@@ -113,6 +114,7 @@ public abstract class MultiPlayerGameModeMixin {
 
 	@Inject(method = "continueDestroyBlock", at = @At("HEAD"), cancellable = true)
 	private void nifte$protectContinueDestroy(BlockPos pos, Direction direction, CallbackInfoReturnable<Boolean> cir) {
+		AutoToolFeature.markMining();
 		if (ToolProtectFeature.blockMainHand(this.minecraft)) {
 			this.stopDestroyBlock();
 			cir.setReturnValue(false);

@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 
 import dev.nifte.config.NifteConfig;
+import dev.nifte.feature.autotool.AutoToolFeature;
 import dev.nifte.feature.autototem.AutoTotemFeature;
 import dev.nifte.feature.camera.AutoThirdPerson;
 import dev.nifte.feature.elytra.AutoElytraFeature;
@@ -27,6 +28,7 @@ public final class NifteClient implements ClientModInitializer {
 		QuickUseFeature.register();
 		AutoTotemFeature.register();
 		AutoElytraFeature.register();
+		AutoToolFeature.register();
 		HandRestockFeature.register();
 		RecipeFeatures.register();
 		HudElementRegistry.attachElementBefore(VanillaHudElements.BOSS_BAR, Nifte.id("compass"), CompassHud::extract);

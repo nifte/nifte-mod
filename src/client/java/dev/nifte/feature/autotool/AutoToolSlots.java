@@ -40,24 +40,31 @@ final class AutoToolSlots {
 		return bestSlot;
 	}
 
-	static void swap(Minecraft minecraft, LocalPlayer player, int bestSlot, int currentSlot) {
+	static boolean swap(Minecraft minecraft, LocalPlayer player, int bestSlot, int currentSlot) {
 		if (bestSlot == currentSlot) {
-			return;
+			return false;
 		}
 
 		if (bestSlot < Inventory.SELECTION_SIZE) {
-			player.getInventory().setSelectedSlot(bestSlot);
-			player.connection.send(new ServerboundSetCarriedItemPacket(bestSlot));
-			return;
+			select(player, bestSlot);
+			return true;
 		}
 
 		if (player.containerMenu != player.inventoryMenu || !InventoryClicks.cursorEmpty()) {
-			return;
+			return false;
 		}
 
 		int menuSlot = InventoryClicks.playerMenuSlot(minecraft, bestSlot);
-		if (menuSlot >= 0) {
-			InventoryClicks.swapWithHotbar(menuSlot, currentSlot);
+		if (menuSlot < 0) {
+			return false;
 		}
+
+		InventoryClicks.swapWithHotbar(menuSlot, currentSlot);
+		return true;
+	}
+
+	static void select(LocalPlayer player, int slot) {
+		player.getInventory().setSelectedSlot(slot);
+		player.connection.send(new ServerboundSetCarriedItemPacket(slot));
 	}
 }
