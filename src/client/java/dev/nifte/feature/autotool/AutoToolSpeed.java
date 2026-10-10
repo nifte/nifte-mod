@@ -37,6 +37,18 @@ final class AutoToolSpeed {
 		return isHoe(stack) && isWartBlock(state);
 	}
 
+	static boolean isAppropriateTool(ItemStack stack, BlockState state) {
+		if (!hasDesignatedTool(state)) {
+			return true;
+		}
+
+		if (stack.isEmpty()) {
+			return false;
+		}
+
+		return matchesMineableTag(stack, state) || stack.getDestroySpeed(state) > 1.0F;
+	}
+
 	static boolean matchesMineableTag(ItemStack stack, BlockState state) {
 		if (stack.isEmpty()) {
 			return false;
@@ -46,6 +58,14 @@ final class AutoToolSpeed {
 			|| (stack.is(ItemTags.AXES) && state.is(BlockTags.MINEABLE_WITH_AXE))
 			|| (stack.is(ItemTags.PICKAXES) && state.is(BlockTags.MINEABLE_WITH_PICKAXE))
 			|| (stack.is(ItemTags.SHOVELS) && state.is(BlockTags.MINEABLE_WITH_SHOVEL));
+	}
+
+	private static boolean hasDesignatedTool(BlockState state) {
+		return state.is(BlockTags.MINEABLE_WITH_AXE)
+			|| state.is(BlockTags.MINEABLE_WITH_HOE)
+			|| state.is(BlockTags.MINEABLE_WITH_PICKAXE)
+			|| state.is(BlockTags.MINEABLE_WITH_SHOVEL)
+			|| isWartBlock(state);
 	}
 
 	private static boolean isHoe(ItemStack stack) {

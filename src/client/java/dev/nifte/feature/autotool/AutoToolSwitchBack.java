@@ -18,17 +18,12 @@ final class AutoToolSwitchBack {
 	private static int returnSlot = -1;
 	private static int toolSlot = -1;
 	private static int idleTicks;
-	private static boolean mining;
 
 	private AutoToolSwitchBack() {
 	}
 
 	static void register() {
 		ClientTickEvents.END_CLIENT_TICK.register(AutoToolSwitchBack::tick);
-	}
-
-	static void markMining() {
-		mining = true;
 	}
 
 	static void record(int selectedSlot, int bestSlot, ItemStack tool, ItemStack displaced) {
@@ -50,14 +45,8 @@ final class AutoToolSwitchBack {
 	}
 
 	private static void tick(Minecraft minecraft) {
-		boolean wasMining = mining;
-		mining = false;
 		if (returnSlot < 0) {
 			return;
-		}
-
-		if (minecraft.gameMode != null && minecraft.gameMode.isDestroying()) {
-			wasMining = true;
 		}
 
 		NifteConfig config = NifteConfig.get();
@@ -72,7 +61,7 @@ final class AutoToolSwitchBack {
 			return;
 		}
 
-		if (wasMining) {
+		if (holdingAttack(minecraft)) {
 			idleTicks = 0;
 			return;
 		}
@@ -140,6 +129,10 @@ final class AutoToolSwitchBack {
 		}
 
 		return stack.getCount() == displaced.getCount() && ItemStack.isSameItemSameComponents(stack, displaced);
+	}
+
+	private static boolean holdingAttack(Minecraft minecraft) {
+		return minecraft.options != null && minecraft.options.keyAttack.isDown();
 	}
 
 	private static boolean canSwap(LocalPlayer player) {

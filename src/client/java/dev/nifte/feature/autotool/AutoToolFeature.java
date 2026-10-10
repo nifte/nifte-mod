@@ -29,10 +29,6 @@ public final class AutoToolFeature {
 		AutoToolSwitchBack.register();
 	}
 
-	public static void markMining() {
-		AutoToolSwitchBack.markMining();
-	}
-
 	public static void toggle() {
 		NifteConfig config = NifteConfig.get();
 		config.autoToolEnabled = !config.autoToolEnabled;
@@ -81,11 +77,12 @@ public final class AutoToolFeature {
 	private static AutoToolScore score(ItemStack stack, BlockState state, Level level) {
 		ItemStack usable = ToolProtectFeature.shouldBlock(stack) ? ItemStack.EMPTY : stack;
 		boolean canHarvest = !state.requiresCorrectToolForDrops() || usable.isCorrectToolForDrops(state);
-		int enchantmentPriority = enchantmentPriority(usable, state, level);
+		boolean appropriateTool = AutoToolSpeed.isAppropriateTool(usable, state);
+		int enchantmentPriority = appropriateTool ? enchantmentPriority(usable, state, level) : 0;
 		boolean preferredTool = AutoToolSpeed.prefersTool(usable, state);
 		float speed = AutoToolSpeed.miningSpeed(usable, state);
 		boolean matchesTool = AutoToolSpeed.matchesMineableTag(usable, state);
-		return new AutoToolScore(canHarvest, enchantmentPriority, preferredTool, speed, matchesTool);
+		return new AutoToolScore(canHarvest, appropriateTool, enchantmentPriority, preferredTool, speed, matchesTool);
 	}
 
 	private static int enchantmentPriority(ItemStack stack, BlockState state, Level level) {

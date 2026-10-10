@@ -314,7 +314,7 @@
   "nifte.config.auto_tool.inventory": "Swap tools from inventory",
 	"nifte.config.auto_tool.inventory.tooltip": "Also search your inventory when auto-swapping tools.",
   "nifte.config.auto_tool.switch_back": "Switch back",
-  "nifte.config.auto_tool.switch_back.tooltip": "Switch back to your previous item after mining.",
+  "nifte.config.auto_tool.switch_back.tooltip": "Switch back to your previous item when you release the mining button.",
   "nifte.config.auto_weapon": "Auto weapon swap",
   "nifte.config.auto_weapon.tooltip": "Swap to the best weapon for the mob you're attacking.",
   "nifte.config.auto_weapon.settings": "Weapon swap settings",
