@@ -22,14 +22,23 @@ final class DrawingProgress {
 		float used = player.getTicksUsingItem(partialTick);
 		ItemUseAnimation animation = stack.getUseAnimation();
 		if (animation == ItemUseAnimation.BOW) {
-			return bowPower(used);
+			return whileDrawing(bowPower(used));
 		}
 
 		if (animation == ItemUseAnimation.CROSSBOW) {
-			return crossbowPower(stack, player, used);
+			Float power = crossbowPower(stack, player, used);
+			return power == null ? null : whileDrawing(power);
 		}
 
 		return null;
+	}
+
+	private static @Nullable Float whileDrawing(float progress) {
+		if (progress >= 1.0F) {
+			return null;
+		}
+
+		return progress;
 	}
 
 	private static float bowPower(float ticks) {
