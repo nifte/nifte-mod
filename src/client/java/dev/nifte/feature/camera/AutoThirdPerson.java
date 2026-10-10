@@ -8,8 +8,11 @@ import net.minecraft.client.player.LocalPlayer;
 import dev.nifte.config.NifteConfig;
 
 public final class AutoThirdPerson {
+	private static final int ELYTRA_DELAY_TICKS = 6;
+
 	private static boolean held;
 	private static boolean wasEligible;
+	private static int elytraTicks;
 
 	private AutoThirdPerson() {
 	}
@@ -23,9 +26,11 @@ public final class AutoThirdPerson {
 		if (!NifteConfig.get().autoThirdPerson || player == null) {
 			restoreIfHeld(minecraft);
 			wasEligible = false;
+			elytraTicks = 0;
 			return;
 		}
 
+		trackElytraDelay(player);
 		boolean eligible = shouldUseThirdPerson(player);
 		CameraType current = minecraft.options.getCameraType();
 		if (eligible) {
@@ -42,12 +47,31 @@ public final class AutoThirdPerson {
 		wasEligible = eligible;
 	}
 
+	private static void trackElytraDelay(LocalPlayer player) {
+		if (isExcluded(player) || !player.isFallFlying()) {
+			elytraTicks = 0;
+			return;
+		}
+
+		if (elytraTicks < ELYTRA_DELAY_TICKS) {
+			elytraTicks++;
+		}
+	}
+
 	private static boolean shouldUseThirdPerson(LocalPlayer player) {
-		if (player.isSpectator() || player.isCreative() || player.isSleeping()) {
+		if (isExcluded(player)) {
 			return false;
 		}
 
-		return player.isPassenger() || player.isFallFlying();
+		if (player.isPassenger()) {
+			return true;
+		}
+
+		return player.isFallFlying() && elytraTicks >= ELYTRA_DELAY_TICKS;
+	}
+
+	private static boolean isExcluded(LocalPlayer player) {
+		return player.isSpectator() || player.isCreative() || player.isSleeping();
 	}
 
 	private static void restoreIfHeld(Minecraft minecraft) {
