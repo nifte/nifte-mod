@@ -114,28 +114,33 @@ public final class InventoryClicks {
 
 		AbstractContainerMenu menu = minecraft.player.containerMenu;
 		if (hotbarFirst) {
-			transferCarried(menu, minecraft, true, false);
+			transferCarried(menu, minecraft, DepositArea.HOTBAR, false);
 			if (cursorEmpty()) {
 				return;
 			}
 
-			transferCarried(menu, minecraft, true, true);
+			transferCarried(menu, minecraft, DepositArea.STORAGE, false);
+			if (cursorEmpty()) {
+				return;
+			}
+
+			transferCarried(menu, minecraft, DepositArea.HOTBAR, true);
 			if (cursorEmpty()) {
 				return;
 			}
 		}
 
-		transferCarried(menu, minecraft, false, false);
+		transferCarried(menu, minecraft, DepositArea.ALL, false);
 		if (cursorEmpty()) {
 			return;
 		}
 
-		transferCarried(menu, minecraft, false, true);
+		transferCarried(menu, minecraft, DepositArea.ALL, true);
 	}
 
-	private static void transferCarried(AbstractContainerMenu menu, Minecraft minecraft, boolean hotbarOnly, boolean emptySlots) {
+	private static void transferCarried(AbstractContainerMenu menu, Minecraft minecraft, DepositArea area, boolean emptySlots) {
 		for (Slot slot : menu.slots) {
-			if (!isDepositSlot(slot, minecraft, hotbarOnly) || !acceptsCarried(slot, emptySlots)) {
+			if (!isDepositSlot(slot, minecraft, area) || !acceptsCarried(slot, emptySlots)) {
 				continue;
 			}
 
@@ -158,21 +163,32 @@ public final class InventoryClicks {
 			&& inSlot.getCount() < inSlot.getMaxStackSize();
 	}
 
-	private static boolean isDepositSlot(Slot slot, Minecraft minecraft, boolean hotbarOnly) {
+	private static boolean isDepositSlot(Slot slot, Minecraft minecraft, DepositArea area) {
 		if (!isPlayerMainInventorySlot(slot, minecraft)) {
 			return false;
 		}
 
-		return !hotbarOnly || Inventory.isHotbarSlot(slot.getContainerSlot());
+		boolean hotbar = Inventory.isHotbarSlot(slot.getContainerSlot());
+		return switch (area) {
+			case ALL -> true;
+			case HOTBAR -> hotbar;
+			case STORAGE -> !hotbar;
+		};
 	}
 
 	private static boolean hasEmptyHotbarSlot(AbstractContainerMenu menu, Minecraft minecraft) {
 		for (Slot slot : menu.slots) {
-			if (isDepositSlot(slot, minecraft, true) && slot.getItem().isEmpty()) {
+			if (isDepositSlot(slot, minecraft, DepositArea.HOTBAR) && slot.getItem().isEmpty()) {
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	private enum DepositArea {
+		ALL,
+		HOTBAR,
+		STORAGE
 	}
 }
