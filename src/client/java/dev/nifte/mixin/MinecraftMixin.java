@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import dev.nifte.feature.autotool.AutoToolFeature;
 import dev.nifte.feature.autoweapon.AutoWeaponFeature;
 import dev.nifte.feature.fastplace.FastBlockPlacement;
+import dev.nifte.feature.food.QuickEatFeature;
 import dev.nifte.feature.quickuse.QuickUseFeature;
 
 @Mixin(Minecraft.class)
@@ -24,6 +25,7 @@ public abstract class MinecraftMixin {
 	private void nifte$tickHead(CallbackInfo ci) {
 		Minecraft minecraft = (Minecraft) (Object) this;
 		QuickUseFeature.beforeTick(minecraft);
+		QuickEatFeature.beforeTick(minecraft);
 		FastBlockPlacement.beforeTick(minecraft);
 		if (FastBlockPlacement.shouldSkipDelay(minecraft.player) || QuickUseFeature.shouldSkipUseDelay()) {
 			this.rightClickDelay = 0;

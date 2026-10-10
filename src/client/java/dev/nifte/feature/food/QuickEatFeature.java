@@ -1,5 +1,6 @@
 package dev.nifte.feature.food;
 
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.component.DataComponents;
@@ -25,12 +26,24 @@ public final class QuickEatFeature {
 	private QuickEatFeature() {
 	}
 
-	public static boolean shouldKeepUsing() {
+	public static void beforeTick(Minecraft minecraft) {
+		if (!canRun(minecraft)) {
+			return;
+		}
+
+		tryStart(minecraft);
+	}
+
+	public static boolean shouldEmulateUse(KeyMapping mapping) {
+		Minecraft minecraft = Minecraft.getInstance();
+		if (minecraft == null || minecraft.options == null || mapping != minecraft.options.keyUse) {
+			return false;
+		}
+
 		if (!active || !enabled() || !keyHeld()) {
 			return false;
 		}
 
-		Minecraft minecraft = Minecraft.getInstance();
 		LocalPlayer player = minecraft.player;
 		return player != null && player.isUsingItem() && isFood(player.getUseItem());
 	}
@@ -56,15 +69,9 @@ public final class QuickEatFeature {
 			return;
 		}
 
-		int foodSlot = findBestFoodSlot(player);
-		if (foodSlot < 0) {
+		if (!tryStart(minecraft)) {
 			stop(minecraft);
-			return;
 		}
-
-		begin(player);
-		selectSlot(player, foodSlot);
-		minecraft.gameMode.useItem(player, InteractionHand.MAIN_HAND);
 	}
 
 	private static boolean canRun(Minecraft minecraft) {
@@ -88,6 +95,23 @@ public final class QuickEatFeature {
 
 	private static boolean keyHeld() {
 		return NifteKeybinds.quickEat != null && NifteKeybinds.quickEat.isDown();
+	}
+
+	private static boolean tryStart(Minecraft minecraft) {
+		LocalPlayer player = minecraft.player;
+		if (player == null || minecraft.gameMode == null || player.isUsingItem() || !player.getFoodData().needsFood()) {
+			return false;
+		}
+
+		int foodSlot = findBestFoodSlot(player);
+		if (foodSlot < 0) {
+			return false;
+		}
+
+		begin(player);
+		selectSlot(player, foodSlot);
+		minecraft.gameMode.useItem(player, InteractionHand.MAIN_HAND);
+		return true;
 	}
 
 	private static void begin(LocalPlayer player) {
