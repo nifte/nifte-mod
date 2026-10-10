@@ -1,10 +1,14 @@
 package dev.nifte.hud;
 
+import java.util.function.Predicate;
+
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
 
 import org.jspecify.annotations.Nullable;
@@ -37,10 +41,40 @@ public final class ArmorHudLayout {
 		return new ArmorHudPiece(stack, text, durabilityColor(percent), font.width(text));
 	}
 
+	static @Nullable ArmorHudPiece heldPiece(LocalPlayer player, Font font, ItemStack stack) {
+		ArmorHudPiece piece = piece(font, stack);
+		if (piece == null || !(stack.getItem() instanceof BowItem bow)) {
+			return piece;
+		}
+
+		return piece.withIconCount(Integer.toString(arrowCount(player, bow.getAllSupportedProjectiles())));
+	}
+
 	static @Nullable ArmorHudPiece heldOnSide(LocalPlayer player, Font font, boolean leftSide) {
 		boolean mainOnLeft = player.getMainArm() == HumanoidArm.LEFT;
 		ItemStack stack = leftSide == mainOnLeft ? player.getMainHandItem() : player.getOffhandItem();
-		return piece(font, stack);
+		return heldPiece(player, font, stack);
+	}
+
+	static int iconCountX(int iconX, int countWidth) {
+		return iconX + 19 - 2 - countWidth;
+	}
+
+	static int iconCountY(int iconY) {
+		return iconY + 6 + 3;
+	}
+
+	private static int arrowCount(LocalPlayer player, Predicate<ItemStack> arrows) {
+		Inventory inventory = player.getInventory();
+		int count = 0;
+		for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+			ItemStack stack = inventory.getItem(slot);
+			if (arrows.test(stack)) {
+				count += stack.getCount();
+			}
+		}
+
+		return count;
 	}
 
 	static ArmorHudPiece[] withHeldRow(@Nullable ArmorHudPiece held, ArmorHudPiece[] armor) {

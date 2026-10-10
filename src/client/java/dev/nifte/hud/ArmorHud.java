@@ -71,6 +71,7 @@ public final class ArmorHud {
 			int rowY = i * ArmorHudLayout.ROW_HEIGHT;
 			graphics.item(piece.stack(), 0, rowY);
 			graphics.text(minecraft.font, piece.text(), ArmorHudLayout.ICON_SIZE + ArmorHudLayout.ICON_TEXT_GAP, rowY + ArmorHudLayout.TEXT_Y_OFFSET, 0xFF000000 | piece.color(), true);
+			drawIconCount(graphics, minecraft.font, piece, 0, rowY);
 		}
 
 		graphics.pose().popMatrix();
@@ -86,12 +87,12 @@ public final class ArmorHud {
 		}
 
 		if (config.armorShowHeldItems) {
-			ArmorHudPiece mainHand = ArmorHudLayout.piece(font, player.getMainHandItem());
+			ArmorHudPiece mainHand = ArmorHudLayout.heldPiece(player, font, player.getMainHandItem());
 			if (mainHand != null) {
 				pieces.add(mainHand);
 			}
 
-			ArmorHudPiece offHand = ArmorHudLayout.piece(font, player.getOffhandItem());
+			ArmorHudPiece offHand = ArmorHudLayout.heldPiece(player, font, player.getOffhandItem());
 			if (offHand != null) {
 				pieces.add(offHand);
 			}
@@ -178,8 +179,25 @@ public final class ArmorHud {
 				: ArmorHudLayout.ICON_SIZE + ArmorHudLayout.ICON_TEXT_GAP;
 			graphics.item(piece.stack(), iconX, rowY);
 			graphics.text(font, piece.text(), textX, rowY + ArmorHudLayout.TEXT_Y_OFFSET, 0xFF000000 | piece.color(), true);
+			drawIconCount(graphics, font, piece, iconX, rowY);
 		}
 
 		graphics.pose().popMatrix();
+	}
+
+	private static void drawIconCount(GuiGraphicsExtractor graphics, Font font, ArmorHudPiece piece, int iconX, int iconY) {
+		String count = piece.iconCount();
+		if (count == null) {
+			return;
+		}
+
+		graphics.text(
+			font,
+			count,
+			ArmorHudLayout.iconCountX(iconX, font.width(count)),
+			ArmorHudLayout.iconCountY(iconY),
+			0xFFFFFFFF,
+			true
+		);
 	}
 }
