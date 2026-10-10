@@ -12,7 +12,6 @@ import dev.nifte.config.NifteConfig;
 import dev.nifte.inventory.InventoryClicks;
 
 final class AutoToolSwitchBack {
-	private static final int RETURN_DELAY_TICKS = 10;
 	private static final int GIVE_UP_TICKS = 20;
 
 	private static final ArrayDeque<MovedTool> moved = new ArrayDeque<>();
@@ -82,13 +81,9 @@ final class AutoToolSwitchBack {
 			return;
 		}
 
-		idleTicks++;
-		if (idleTicks < RETURN_DELAY_TICKS) {
-			return;
-		}
-
 		if (!moved.isEmpty() && !canSwap(player)) {
-			if (idleTicks >= RETURN_DELAY_TICKS + GIVE_UP_TICKS) {
+			idleTicks++;
+			if (idleTicks >= GIVE_UP_TICKS) {
 				clear();
 			}
 
