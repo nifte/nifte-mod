@@ -19,14 +19,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.block.Block;
 
-import dev.nifte.feature.autotool.SilkTouchBlocks;
 import dev.nifte.feature.overlay.FireOverlayFeature;
 import dev.nifte.feature.overlay.ShieldOverlayFeature;
 import dev.nifte.feature.particles.ParticleGroups;
@@ -36,9 +33,6 @@ import dev.nifte.input.NifteKeybinds;
 public final class NifteConfigScreen {
 	private static final Function<Boolean, Component> ENABLED_DISABLED = value -> Component.translatable(
 		value ? "nifte.config.enabled" : "nifte.config.disabled"
-	).withStyle(value ? ChatFormatting.GREEN : ChatFormatting.RED);
-	private static final Function<Boolean, Component> PREFER_SILK = value -> Component.translatable(
-		value ? "nifte.config.auto_tool.silk_touch.prefer" : "nifte.config.auto_tool.silk_touch.ignore"
 	).withStyle(value ? ChatFormatting.GREEN : ChatFormatting.RED);
 	private static final int HUD_SCALE_MIN = 5;
 	private static final int HUD_SCALE_MAX = 30;
@@ -363,7 +357,6 @@ public final class NifteConfigScreen {
 				.setSaveConsumer(value -> config.autoToolSwitchBack = value)
 				.build()
 		);
-		addSilkTouchPreferences(category, entries, config);
 		addEntry(category, entries.startEnumSelector(Component.translatable("nifte.config.tool_protect"), ToolProtectMode.class, config.toolProtectMode)
 			.setDefaultValue(ToolProtectMode.DISABLED)
 			.setEnumNameProvider(mode -> ((ToolProtectMode) mode).optionLabel())
@@ -727,26 +720,6 @@ public final class NifteConfigScreen {
 		list.setExpanded(false);
 		for (AbstractConfigListEntry<?> child : children) {
 			list.add(child);
-		}
-
-		addEntry(category, list.build());
-	}
-
-	private static void addSilkTouchPreferences(ConfigCategory category, ConfigEntryBuilder entries, NifteConfig config) {
-		SubCategoryBuilder list = entries.startSubCategory(Component.translatable("nifte.config.auto_tool.silk_touch"));
-		list.setExpanded(false);
-		list.setTooltip(tooltip("nifte.config.auto_tool.silk_touch"));
-		for (Block block : SilkTouchBlocks.blocks()) {
-			Identifier id = BuiltInRegistries.BLOCK.getKey(block);
-			if (id == null) {
-				continue;
-			}
-
-			boolean defaultPrefer = SilkTouchBlocks.defaultsToPrefer(block);
-			list.add(booleanToggle(entries, block.getName(), config.prefersSilkTouch(id, defaultPrefer), PREFER_SILK)
-				.setDefaultValue(defaultPrefer)
-				.setSaveConsumer(value -> config.setPrefersSilkTouch(id, value, defaultPrefer))
-				.build());
 		}
 
 		addEntry(category, list.build());

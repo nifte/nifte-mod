@@ -93,8 +93,6 @@ public final class NifteConfig {
 	public boolean autoToolEnabled = false;
 	public boolean autoToolFromInventory = false;
 	public boolean autoToolSwitchBack = false;
-	public List<String> silkTouchOptIn = new ArrayList<>();
-	public List<String> silkTouchOptOut = new ArrayList<>();
 	public boolean autoWeaponEnabled = false;
 	public boolean autoWeaponFromInventory = false;
 	public ToolProtectMode toolProtectMode = ToolProtectMode.DISABLED;
@@ -240,14 +238,6 @@ public final class NifteConfig {
 					loaded.bucketRestockEnabled = enabled;
 				}
 
-				if (loaded.silkTouchOptIn == null) {
-					loaded.silkTouchOptIn = new ArrayList<>();
-				}
-
-				if (loaded.silkTouchOptOut == null) {
-					loaded.silkTouchOptOut = new ArrayList<>();
-				}
-
 				loaded.crosshairScale = Mth.clamp(loaded.crosshairScale, CROSSHAIR_SCALE_MATCH_GUI, CROSSHAIR_SCALE_MAX);
 				loaded.fireOverlayOffset = Mth.clamp(loaded.fireOverlayOffset, 0.0F, 0.6F);
 				loaded.shieldOffset = Mth.clamp(loaded.shieldOffset, 0.0F, 0.8F);
@@ -275,18 +265,6 @@ public final class NifteConfig {
 			copy.disabledParticles = new ArrayList<>(copy.disabledParticles);
 		}
 
-		if (copy.silkTouchOptIn == null) {
-			copy.silkTouchOptIn = new ArrayList<>();
-		} else {
-			copy.silkTouchOptIn = new ArrayList<>(copy.silkTouchOptIn);
-		}
-
-		if (copy.silkTouchOptOut == null) {
-			copy.silkTouchOptOut = new ArrayList<>();
-		} else {
-			copy.silkTouchOptOut = new ArrayList<>(copy.silkTouchOptOut);
-		}
-
 		return copy;
 	}
 
@@ -307,42 +285,6 @@ public final class NifteConfig {
 
 	public boolean isParticleDisabled(Identifier id) {
 		return this.disabledParticles.contains(id.toString());
-	}
-
-	public boolean prefersSilkTouch(Identifier id, boolean defaultPrefer) {
-		String key = id.toString();
-		if (this.silkTouchOptIn != null && this.silkTouchOptIn.contains(key)) {
-			return true;
-		}
-
-		if (this.silkTouchOptOut != null && this.silkTouchOptOut.contains(key)) {
-			return false;
-		}
-
-		return defaultPrefer;
-	}
-
-	public void setPrefersSilkTouch(Identifier id, boolean prefer, boolean defaultPrefer) {
-		String key = id.toString();
-		if (this.silkTouchOptIn == null) {
-			this.silkTouchOptIn = new ArrayList<>();
-		}
-
-		if (this.silkTouchOptOut == null) {
-			this.silkTouchOptOut = new ArrayList<>();
-		}
-
-		this.silkTouchOptIn.remove(key);
-		this.silkTouchOptOut.remove(key);
-		if (prefer == defaultPrefer) {
-			return;
-		}
-
-		if (prefer) {
-			this.silkTouchOptIn.add(key);
-		} else {
-			this.silkTouchOptOut.add(key);
-		}
 	}
 
 	public void setParticleDisabled(Identifier id, boolean disabled) {
