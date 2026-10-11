@@ -1,16 +1,35 @@
 package dev.nifte.feature.autotool;
 
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockItemTags;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.InfestedBlock;
 import net.minecraft.world.level.block.state.BlockState;
+
+import dev.nifte.config.NifteConfig;
 
 final class AutoToolBlocks {
 	private AutoToolBlocks() {
 	}
 
 	static boolean prefersSilkTouch(BlockState state) {
+		Block block = state.getBlock();
+		if (!SilkTouchBlocks.worksOn(block)) {
+			return false;
+		}
+
+		Identifier id = BuiltInRegistries.BLOCK.getKey(block);
+		if (id == null) {
+			return false;
+		}
+
+		return NifteConfig.get().prefersSilkTouch(id, defaultsToSilk(state));
+	}
+
+	static boolean defaultsToSilk(BlockState state) {
 		if (state.is(BlockTags.IMPERMEABLE)
 			|| state.is(BlockTags.ICE)
 			|| state.is(BlockTags.LEAVES)

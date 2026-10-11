@@ -1,6 +1,7 @@
 package dev.nifte.mixin;
 
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,4 +24,7 @@ public interface AbstractContainerScreenAccessor {
 
 	@Invoker("hasClickedOutside")
 	boolean nifte$hasClickedOutside(double mouseX, double mouseY, int left, int top);
+
+	@Invoker("slotClicked")
+	void nifte$slotClicked(Slot slot, int slotId, int buttonNum, ContainerInput containerInput);
 }

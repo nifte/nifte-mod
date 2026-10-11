@@ -19,6 +19,7 @@ import dev.nifte.feature.dropconfirm.DropConfirmFeature;
 import dev.nifte.feature.halfstack.HalfStackMoveFeature;
 import dev.nifte.feature.itemscroll.ItemScrollFeature;
 import dev.nifte.feature.recipes.RecipeFeatures;
+import dev.nifte.feature.shiftdrop.ShiftDropFeature;
 import dev.nifte.feature.sort.ContainerSortFeature;
 
 @Mixin(AbstractContainerScreen.class)
@@ -54,6 +55,11 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 		AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) (Object) this;
 		if (ContainerSortFeature.handleKey(screen, event)) {
 			cir.setReturnValue(true);
+			return;
+		}
+
+		if (ShiftDropFeature.handleKey(screen, event)) {
+			cir.setReturnValue(false);
 		}
 	}
 
