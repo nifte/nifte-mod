@@ -1,6 +1,7 @@
 {
   "required": true,
   "package": "dev.nifte.mixin",
+  "plugin": "dev.nifte.mixin.NifteMixinPlugin",
   "compatibilityLevel": "JAVA_25",
   "client": [
     "AbstractConfigEntryMixin",
@@ -29,6 +30,8 @@
     "FogRendererMixin",
     "FpsDebugChartMixin",
     "FpsLimitMixin",
+    "SodiumFpsFormatterMixin",
+    "SodiumFpsLimitMixin",
     "FirstPersonHandsAndItemsRendererMixin",
     "GameRendererMixin",
     "GuiGraphicsExtractorMixin",
