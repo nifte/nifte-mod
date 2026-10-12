@@ -70,24 +70,30 @@ final class AutoToolSwitchBack {
 			return;
 		}
 
-		if (!moved.isEmpty() && !canSwap(player)) {
-			idleTicks++;
-			if (idleTicks >= GIVE_UP_TICKS) {
-				clear();
+		if (!moved.isEmpty()) {
+			if (!canSwap(player) || !restoreMove(minecraft, player, moved.peekLast())) {
+				idleTicks++;
+				if (idleTicks >= GIVE_UP_TICKS) {
+					clear();
+				}
+
+				return;
 			}
 
-			return;
+			moved.removeLast();
+			idleTicks = 0;
+			// Another click in this same tick reuses the container state id, and the
+			// server correction leaves the previous tool in hand.
+			if (!moved.isEmpty()) {
+				return;
+			}
 		}
 
-		restore(minecraft, player);
+		restoreSelection(player);
 		clear();
 	}
 
-	private static void restore(Minecraft minecraft, LocalPlayer player) {
-		while (!moved.isEmpty()) {
-			restoreMove(minecraft, player, moved.removeLast());
-		}
-
+	private static void restoreSelection(LocalPlayer player) {
 		if (returnSlot < 0 || returnSlot >= Inventory.SELECTION_SIZE || toolSlot == returnSlot) {
 			return;
 		}
@@ -97,22 +103,25 @@ final class AutoToolSwitchBack {
 		}
 	}
 
-	private static void restoreMove(Minecraft minecraft, LocalPlayer player, MovedTool move) {
+	private static boolean restoreMove(Minecraft minecraft, LocalPlayer player, MovedTool move) {
 		if (move.hotbarSlot < 0 || move.hotbarSlot >= Inventory.SELECTION_SIZE) {
-			return;
+			return true;
 		}
 
 		Inventory inventory = player.getInventory();
 		ItemStack hotbar = inventory.getItem(move.hotbarSlot);
 		ItemStack source = inventory.getItem(move.inventorySlot);
 		if (!stillHoldsTool(hotbar, move.tool) || !stillDisplaced(source, move.displaced)) {
-			return;
+			return false;
 		}
 
 		int menuSlot = InventoryClicks.playerMenuSlot(minecraft, move.inventorySlot);
-		if (menuSlot >= 0) {
-			InventoryClicks.swapWithHotbar(menuSlot, move.hotbarSlot);
+		if (menuSlot < 0) {
+			return false;
 		}
+
+		InventoryClicks.swapWithHotbar(menuSlot, move.hotbarSlot);
+		return true;
 	}
 
 	private static boolean stillHoldsTool(ItemStack stack, ItemStack tool) {
@@ -128,7 +137,9 @@ final class AutoToolSwitchBack {
 			return stack.isEmpty();
 		}
 
-		return stack.getCount() == displaced.getCount() && ItemStack.isSameItemSameComponents(stack, displaced);
+		// Count and damage change while mining (picked-up drops, durability). An exact
+		// snapshot match skips this undo after a newer tool was already put back.
+		return ItemStack.isSameItem(stack, displaced);
 	}
 
 	private static boolean holdingAttack(Minecraft minecraft) {
