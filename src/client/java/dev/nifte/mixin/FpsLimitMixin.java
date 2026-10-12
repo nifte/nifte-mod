@@ -12,7 +12,7 @@ import dev.nifte.feature.fps.FpsCap;
 @Mixin(Minecraft.class)
 public abstract class FpsLimitMixin {
 	@Redirect(
-		method = "runTick(Z)V",
+		method = "renderFrame(Z)V",
 		at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V")
 	)
 	private void nifte$limitHighFps(ProfilerFiller profiler, String name) {
